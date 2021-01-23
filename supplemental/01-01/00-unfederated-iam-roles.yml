@@ -1,0 +1,175 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates the basic IAM unfederated user pattern with MFA requirements and sessionname required.
+Resources: 
+  AllUsers:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: AllUsers
+  UnfederatedAdministratorAccess:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: UnfederatedAdministrators
+  UnfederatedReadOnlyAccess:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: UnfederatedReadOnly
+  UnfederatedAdministratorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: UnfederatedAdministrator
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AdministratorAccess"
+        - "arn:aws:iam::aws:policy/job-function/Billing"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: { "AWS": !Sub "arn:aws:iam::${AWS::AccountId}:root" }
+          Action: "sts:AssumeRole"
+          Condition:
+            Bool: 
+              aws:MultiFactorAuthPresent: "true"
+            StringLike:
+              sts:RoleSessionName: "${aws:username}"
+  UnfederatedReadRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: UnfederatedRead
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/SecurityAudit"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: { "AWS": !Sub "arn:aws:iam::${AWS::AccountId}:root" }
+          Action: "sts:AssumeRole"
+          Condition:
+            Bool: 
+              aws:MultiFactorAuthPresent: "true"
+            StringLike:
+              sts:RoleSessionName: "${aws:username}"
+  ManagedMFA:
+    Type: AWS::IAM::Policy
+    Properties:
+      Groups:
+        - !Ref AllUsers
+      PolicyName: Force_MFA
+      PolicyDocument:
+        Id: EnforceMFASignin
+        Version: 2012-10-17
+        Statement:
+          -
+            Sid: AllowAllUsersToListAccounts
+            Effect: Allow
+            Action:
+              - "iam:ListAccounAliases"
+              - "iam:ListUsers"
+              - "iam:ListVirtualMFADevices"
+              - "iam:GetAccountPasswordPolicy"
+              - "iam:GetAccountSummary"
+            Resource: "*"
+          -
+            Sid: AllowIndividualUserToSeeAndManageOnlyTheirOwnAccountInformation
+            Effect: Allow
+            Action:
+              - "iam:CreateAccessKey"
+              - "iam:DeleteAccessKey"
+              - "iam:DeleteLoginProfile"
+              - "iam:GetLoginProfile"
+              - "iam:ListAccessKeys"
+              - "iam:UpdateAccessKey"
+              - "iam:UpdateLoginProfile"
+              - "iam:ListSigningCertificates"
+              - "iam:DeleteSigningCertificate"
+              - "iam:UpdateSigningCertificate"
+              - "iam:UploadSigningCertificate"
+              - "iam:ListSSHPublicKeys"
+              - "iam:GetSSHPublicKey"
+              - "iam:DeleteSSHPublicKey"
+              - "iam:UpdateSSHPublicKey"
+              - "iam:UploadSSHPublicKey"
+            Resource: "arn:aws:iam::*:user/${aws:username}"
+          -
+            Sid: AllowIndividualUserToListOnlyTheirOwnMFA
+            Effect: Allow
+            Action:
+              - "iam:ListMFADevices"
+            Resource:
+              - "arn:aws:iam::*:mfa/*"
+              - "arn:aws:iam::*:user/${aws:username}"
+          -
+            Sid: AllowIndividualUserToManageTheirOwnMFA
+            Effect: Allow
+            Action:
+              - "iam:CreateVirtualMFADevice"
+              - "iam:DeleteVirtualMFADevice"
+              - "iam:EnableMFADevice"
+              - "iam:ResyncMFADevice"
+            Resource:
+              - "arn:aws:iam::*:mfa/${aws:username}"
+              - "arn:aws:iam::*:user/${aws:username}"
+          -
+            Sid: AllowIndividualUserToDeactivateOnlyTheirOwnMFAOnlyWhenUsingMFA
+            Effect: Allow
+            Action:
+              - "iam:DeactivateVirtualMFADevice"
+            Resource:
+              - "arn:aws:iam::*:mfa/${aws:username}"
+              - "arn:aws:iam::*:user/${aws:username}"
+            Condition:
+              Bool:
+                aws:MultiFactorAuthPresent: "true"
+          -
+            Sid: BlockMostAccessUnlessSignedInWithMFA
+            Effect: Deny
+            NotAction:
+              - "iam:ChangePassword"
+              - "iam:CreateLoginProfile"
+              - "iam:CreateVirtualMFADevice"
+              - "iam:DeleteVirtualMFADevice"
+              - "iam:EnableMFADevice"
+              - "iam:ResyncMFADevice"
+              - "iam:ListMFADevices"
+              - "iam:ListAccountAliases"
+              - "iam:ListUsers"
+              - "iam:ListSSHPublicKeys"
+              - "iam:ListAccessKeys"
+              - "iam:ListServiceSpecificCredentials"
+              - "iam:GetAccountSummary"
+              - "sts:GetSessionToken"
+            Resource: "*"
+            Condition:
+              BoolIfExists:
+                aws:MultiFactorAuthPresent: "false"
+  AssumeUnfederatedAdmin:
+    Type: AWS::IAM::Policy
+    Properties:
+      Groups:
+        - !Ref UnfederatedAdministratorAccess
+      PolicyName: AssumeUnfederatedAdmin
+      PolicyDocument:
+        Id: AllowAssumption
+        Version: 2012-10-17
+        Statement:
+        -
+          Sid: AssumeUnfederatedAdmin
+          Effect: Allow
+          Action:
+            - "sts:AssumeRole"
+          Resource: !GetAtt UnfederatedAdministratorRole.Arn
+  AssumeUnfederatedRead:
+    Type: AWS::IAM::Policy
+    Properties:
+      Groups:
+        - !Ref UnfederatedReadOnlyAccess
+      PolicyName: AssumeUnfederatedRead
+      PolicyDocument:
+        Id: AllowAssumption
+        Version: 2012-10-17
+        Statement:
+        -
+          Sid: AssumeUnfederatedAdmin
+          Effect: Allow
+          Action:
+            - "sts:AssumeRole"
+          Resource: !GetAtt UnfederatedReadRole.Arn
