@@ -61,6 +61,8 @@ Resources:
       Groups:
         - "UnfederatedAdministrators"
         - "UnfederatedReadOnly"
+        - "AllUsers"
+        - "OrgAdminAccess"
       LoginProfile:
         Password:
           !GetAtt DefaultPassword.Password

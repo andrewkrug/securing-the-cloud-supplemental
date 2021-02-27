@@ -1,0 +1,170 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy a single global CloudTrail configuration enabling all regions
+  in the account to write to a trusted account secure cloudtrail storage.
+Parameters:
+  ForeignAccountRetention:
+    Description: The number of days CloudTrail should be retained in the Foreign Account s3 storage before expiry.
+    Type: String
+    Default: "90"
+  ForeignAccountGlacierRetention:
+    Description: The number of days CloudTrail should be retained in the Foreign Account glacier storage before expiry.
+    Type: String
+    Default: "365"
+  ObjectLock:
+    Description: Lock objects at the Cloud provider level disallowing tampering.  This can only be done on create.  Never updatable.
+    Type: String
+    AllowedValues: 
+      - True
+      - False
+    Default: False
+Resources:
+  CloudTrailCMK:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A symmetric managed KMS key for use with the foreign account trusted cloudtrail pattern.
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: cloudtrail-key-policy
+        Statement:
+        - Sid: Allow foreign accout to encrypt cloudtrail logs
+          Effect: Allow
+          Principal:
+            Service: cloudtrail.amazonaws.com
+          Action: 
+            - "kms:GenerateDataKey*"
+            - "kms:DescribeKey"
+          Resource: '*'
+          Condition: 
+            StringLike:
+                kms:EncryptionContext:aws:cloudtrail:arn: # Allow CloudTrail in this account to encrypt using the key
+                  - !Sub arn:aws:cloudtrail:*:${AWS::AccountId}:trail/*
+        - Sid: Allow foreign accout to encrypt cloudtrail logs in the s3 service
+          Effect: Allow
+          Principal:
+            Service: s3.amazonaws.com
+          Action: "kms:GenerateDataKey*"
+          Resource: '*'
+          Condition: 
+            StringLike:
+                kms:EncryptionContext:aws:s3:arn: # Allow the S3 Bucket to use the key as well for at rest encryption
+                  - !Sub cloudtrail.${AWS::Region}.${AWS::AccountId}
+        - Sid: Allow IAM Users to view CloudTrail using the UI
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root" # Any user in the this account will have access to decrypt the data
+          Action: 
+            - "kms:Decrypt"
+            - "kms:Encrypt"
+            - "kms:ReEncrypt"
+            - "kms:GenerateDataKey"
+            - "kms:DescribeKey"
+          Resource: '*'
+          Condition: 
+            StringLike:
+                kms:EncryptionContext:aws:cloudtrail:arn: false
+        - Sid: Allow IAM Users in this account administer the key
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root" # Any user in the this with sufficient IAM access to KMS can edit this policy
+          Action: "kms:*"
+          Resource: '*'
+        - Sid: Allow the attachment of persistent resources
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+          Action:
+            - "kms:CreateGrant"
+            - "kms:ListGrants"
+            - "kms:RevokeGrant"
+          Resource: '*'
+          Condition:
+            Bool:
+              "kms:GrantIsForAWSResource": "true"
+  ForeignAccountS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        'Fn::Sub': 'cloudtrail.${AWS::Region}.${AWS::AccountId}'
+      OwnershipControls:
+        Rules:
+        - ObjectOwnership: BucketOwnerPreferred
+      ObjectLockEnabled: !Ref ObjectLock
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: !Ref CloudTrailCMK
+              SSEAlgorithm: aws:kms # Requires AWS KMS for Cross Account Access
+      LifecycleConfiguration:
+        Rules:
+          - Id: "Expire"
+            Status: "Enabled"
+            ExpirationInDays: !Ref ForeignAccountRetention # Complete Disposal/Deletion of Data after 90 days with the exception of glacier.
+          - Id: GlacierRule
+            Prefix: glacier
+            Status: Enabled
+            ExpirationInDays: !Ref ForeignAccountGlacierRetention
+            Transitions:
+              - TransitionInDays: '1'
+                StorageClass: GLACIER
+      VersioningConfiguration:
+        Status: Enabled
+    DeletionPolicy: Retain
+  BucketPolicy: 
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: 
+        Ref: ForeignAccountS3Bucket
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Sid: "AWSCloudTrailAclCheck"
+            Effect: "Allow"
+            Principal: 
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:GetBucketAcl"
+            Resource: 
+              !Sub |-
+                arn:aws:s3:::${ForeignAccountS3Bucket}
+          - 
+            Sid: "AWSCloudTrailWrite"
+            Effect: "Allow"
+            Principal: 
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource: 
+              !Sub |-
+                arn:aws:s3:::${ForeignAccountS3Bucket}/*
+            Condition: 
+              StringEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"
+          - 
+            Sid: "AWSCloudTrailWrite"
+            Effect: "Deny"
+            Principal: "*"
+            Action: "s3:PutObject"
+            Resource:
+              !Sub |-
+                arn:aws:s3:::${ForeignAccountS3Bucket}/*
+            Condition: 
+              StringNotEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"
+  CloudTrail:
+    DependsOn: BucketPolicy
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      S3BucketName: !Ref ForeignAccountS3Bucket
+      EnableLogFileValidation: true
+      IsLogging: true
+      IncludeGlobalServiceEvents: true
+      IsMultiRegionTrail: true
+Outputs:
+  CloudTrail:
+    Description: The name of the CloudTrail successfully created.  This is a multi-region trail.
+    Value: !Ref CloudTrail
+  S3Bucket:
+    Description: The name of the s3 bucket in this account that will be storing cloudtrail log data.
+    Value: !Ref ForeignAccountS3Bucket
+  KMSKeyId:
+    Description: The ID of the customer master key created to protect the data at rest and create additional integrity.
+    Value: !Ref CloudTrailCMK

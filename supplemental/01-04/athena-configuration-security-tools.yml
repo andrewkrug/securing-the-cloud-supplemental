@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Set up AWS Athena in security tooling and automation account.  Create the necessary roles 
+  for examiners and machines to access logs.
+Parameters:
+  CloudTrailBucket:
+    Description: The name of the S3 bucket that holds logs that Athena will need to analyze.
+    Type: String
+    Default: "organization-cloudtrail.us-west-2.125649083455"
+  CloudTrailLogPath:
+    Description: The path the the files in S3. Example AWSLogs/YOUROrgId
+    Type: String
+    Default: "AWSLogs/o-ck6nmvfrcc/"
+
+Resources:
+  ResultBucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName:
+        'Fn::Sub': 'athena-results.${AWS::Region}.${AWS::AccountId}'
+    
+  CloudTrailAnalysis:
+    Type: AWS::Athena::WorkGroup
+    Properties:       
+      Name: cloudtrailanalysis
+      RecursiveDeleteOption: true
+      WorkGroupConfiguration:
+        PublishCloudWatchMetricsEnabled: true
+        ResultConfiguration:
+          OutputLocation: !Join [ "", ["s3://" , Ref: ResultBucket, "/"]]
+  
+  CloudTrailAccessPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: CloudTrailAnalysis
+      PolicyDocument:
+        Id: CloudTrailAnalysisWorkgroupPolicy
+        Version: 2012-10-17
+        Statement:
+          -
+            Sid: AllowAthenaWorkgroupAccess
+            Effect: Allow
+            Action:
+            - athena:ListWorkGroups
+            - athena:GetExecutionEngine
+            - athena:GetExecutionEngines
+            - athena:GetNamespace
+            - athena:GetCatalogs
+            - athena:GetNamespaces
+            - athena:GetTables
+            - athena:GetTable
+            Resource: "*"
+          -
+            Sid: AllowAthenaQueries
+            Effect: Allow
+            Action:
+            - athena:ListWorkGroups
+            - athena:GetExecutionEngine
+            - athena:GetExecutionEngines
+            - athena:GetNamespace
+            - athena:GetCatalogs
+            - athena:GetNamespaces
+            - athena:GetTables
+            - athena:GetTable
+            Resource: "*"
+          -
+            Sid: AllowS3Access
+            Effect: Allow
+            Action:
+            - s3:Get*
+            - s3:List*
+            Resource: 
+            - !Join [ "", ["arn:aws:s3:::", !Ref CloudTrailBucket]]
+            - !Join [ "", ["arn:aws:s3:::", !Ref CloudTrailBucket, "/*"]]
+  
+  AlarmSNSTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName:
+        'Fn::Sub': 'athena-alarms-${AWS::Region}-${AWS::AccountId}'

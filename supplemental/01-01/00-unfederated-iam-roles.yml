@@ -13,6 +13,10 @@ Resources:
     Type: AWS::IAM::Group
     Properties:
       GroupName: UnfederatedReadOnly
+  OrgAdminAccess:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: OrgAdminAccess
   UnfederatedAdministratorRole:
     Type: AWS::IAM::Role
     Properties:
@@ -77,6 +81,8 @@ Resources:
               - "iam:DeleteLoginProfile"
               - "iam:GetLoginProfile"
               - "iam:ListAccessKeys"
+              - "iam:ListRoles"
+              - "iam:ListGroups"
               - "iam:UpdateAccessKey"
               - "iam:UpdateLoginProfile"
               - "iam:ListSigningCertificates"
@@ -88,6 +94,7 @@ Resources:
               - "iam:DeleteSSHPublicKey"
               - "iam:UpdateSSHPublicKey"
               - "iam:UploadSSHPublicKey"
+              - "iam:ChangePassword"
             Resource: "arn:aws:iam::*:user/${aws:username}"
           -
             Sid: AllowIndividualUserToListOnlyTheirOwnMFA
@@ -123,7 +130,6 @@ Resources:
             Sid: BlockMostAccessUnlessSignedInWithMFA
             Effect: Deny
             NotAction:
-              - "iam:ChangePassword"
               - "iam:CreateLoginProfile"
               - "iam:CreateVirtualMFADevice"
               - "iam:DeleteVirtualMFADevice"
@@ -137,6 +143,7 @@ Resources:
               - "iam:ListServiceSpecificCredentials"
               - "iam:GetAccountSummary"
               - "sts:GetSessionToken"
+              - "iam:ChangePassword"
             Resource: "*"
             Condition:
               BoolIfExists:
@@ -173,3 +180,19 @@ Resources:
           Action:
             - "sts:AssumeRole"
           Resource: !GetAtt UnfederatedReadRole.Arn
+  AssumeUnfederatedRead:
+    Type: AWS::IAM::Policy
+    Properties:
+      Groups:
+        - !Ref OrgAdminAccess
+      PolicyName: AssumeOrgAdminPolicy
+      PolicyDocument:
+        Id: AllowAssumption
+        Version: 2012-10-17
+        Statement:
+        -
+          Sid: AssumeUnfederatedAdmin
+          Effect: Allow
+          Action:
+            - "sts:AssumeRole"
+          Resource: arn:aws:iam::*:role/OrganizationAccountAccessRole

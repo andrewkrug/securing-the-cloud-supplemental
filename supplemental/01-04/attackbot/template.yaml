@@ -1,0 +1,158 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  attackbot
+Globals:
+  Function:
+    Timeout: 30
+
+
+Resources:
+  IntakeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: attackbot
+      Handler: intake.lambda_handler
+      Runtime: python3.8
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDBTable
+      Environment:
+        Variables:
+          MY_SNS_TOPIC_ARN: !Ref AttackBotTopic
+          MY_SQS_QUEUE_URL: !Ref AttackBotQueue
+          MY_DYNAMODB_TABLE: !Ref DynamoDBTable
+      Events:
+        SqsJobQueue:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt AttackBotQueue.Arn
+            BatchSize: 1
+
+  ActionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: attackbot
+      Handler: attacks.lambda_handler
+      Runtime: python3.8
+      Timeout: 900
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDBTable
+      Environment:
+        Variables:
+          MY_SNS_TOPIC_ARN: !Ref AttackBotTopic
+          MY_SQS_QUEUE_URL: !Ref AttackBotQueue
+          MY_DYNAMODB_TABLE: !Ref DynamoDBTable
+      Events:
+        DDBEvent:
+          Type: DynamoDB
+          Properties:
+            Stream: 
+              !GetAtt DynamoDBTable.StreamArn
+            StartingPosition: LATEST
+            BatchSize: 1
+            Enabled: True
+
+
+  TenderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: attackbot
+      Handler: tender.lambda_handler
+      Runtime: python3.8
+      Timeout: 900
+      Policies: 
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DynamoDBTable
+      Environment:
+        Variables:
+          MY_SNS_TOPIC_ARN: !Ref AttackBotTopic
+          MY_SQS_QUEUE_URL: !Ref AttackBotQueue
+          MY_DYNAMODB_TABLE: !Ref DynamoDBTable
+      Events:
+        TenderScheduledEvent:
+          Type: Schedule
+          Properties:
+            Schedule: rate(38 minutes)
+
+  AttackBotTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: "attackbotinbound"
+
+  AttackBotQueue:
+    Type: AWS::SQS::Queue
+
+  AttackBotQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref AttackBotQueue
+      PolicyDocument:
+        Statement:
+          Effect: Allow
+          Principal: "*"
+          Action: "sqs:*"
+          Resource: "*"
+          Condition:
+            ArnEquals:
+              "aws:SourceArn": !Ref AttackBotTopic
+
+  AttackBotQueueToSnsSubscription:
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !GetAtt AttackBotQueue.Arn
+      Protocol: sqs
+      RawMessageDelivery: true
+      TopicArn: !Ref AttackBotTopic
+
+  AttackBotQueueToSnsSubscriptionPolicy:
+    Type: AWS::SNS::TopicPolicy
+    Properties: 
+      PolicyDocument:
+        Statement:
+          - Sid: AllowExternal
+            Effect: Allow
+            Action:
+              - "SNS:Publish"
+            Principal: "*"
+            Resource:
+              Ref: AttackBotTopic
+          - Sid: AllowAllThisAccount
+            Effect: Allow
+            Action:
+              - "SNS:Publish"
+              - "SNS:GetTopicAttributes"
+              - "SNS:SetTopicAttributes"
+              - "SNS:AddPermission"
+              - "SNS:RemovePermission"
+              - "SNS:DeleteTopic"
+              - "SNS:Subscribe"
+              - "SNS:ListSubscriptionsByTopic"
+              - "SNS:Publish"
+              - "SNS:Receive"
+            Principal:
+              AWS: !Ref AWS::AccountId
+            Resource:
+              Ref: AttackBotTopic
+      Topics:
+        - !Ref AttackBotTopic
+
+
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: accountId
+          AttributeType: S
+      KeySchema: 
+        - AttributeName: accountId
+          KeyType: HASH
+      ProvisionedThroughput: 
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+

@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy an S3 bucket in the security tools account that allows 
+  any account in the organization to write CloudTrail logs.
+Parameters:
+  AWSOrganizationId:
+    Description: The ID number of the parent account owning the CloudTrail logs you want to receive.
+    Type: String
+    Default: "o-ck6nmvfrcc"
+  ForeignAccountRetention:
+    Description: The number of days CloudTrail should be retained in the Foreign Account s3 storage before expiry.
+    Type: String
+    Default: "90"
+  ForeignAccountGlacierRetention:
+    Description: The number of days CloudTrail should be retained in the Foreign Account glacier storage before expiry.
+    Type: String
+    Default: "365"
+  ObjectLock:
+    Description: Lock objects at the Cloud provider level disallowing tampering.  This can only be done on create.  Never updatable.
+    Type: String
+    AllowedValues: 
+      - True
+      - False
+    Default: False
+  CloudTrailCMK:
+    Description: The KMS key id of the key generated when you created the organization trail.
+    Type: String
+    Default: 93b9219f-9f82-4ad1-bd55-07f5972fda35
+Resources:
+  ForeignAccountS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        'Fn::Sub': 'organization-cloudtrail.${AWS::Region}.${AWS::AccountId}'
+      OwnershipControls:
+        Rules:
+        - ObjectOwnership: BucketOwnerPreferred
+      ObjectLockEnabled: !Ref ObjectLock
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID: !Ref CloudTrailCMK
+              SSEAlgorithm: aws:kms # Requires AWS KMS for Cross Account Access
+      LifecycleConfiguration:
+        Rules:
+          - Id: "Expire"
+            Status: "Enabled"
+            ExpirationInDays: !Ref ForeignAccountRetention # Complete Disposal/Deletion of Data after 90 days with the exception of glacier.
+          - Id: GlacierRule
+            Prefix: glacier
+            Status: Enabled
+            ExpirationInDays: !Ref ForeignAccountGlacierRetention
+            Transitions:
+              - TransitionInDays: '1'
+                StorageClass: GLACIER
+      VersioningConfiguration:
+        Status: Enabled
+    DeletionPolicy: Retain
+  BucketPolicy: 
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: 
+        Ref: ForeignAccountS3Bucket
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Sid: "AWSCloudTrailAclCheck"
+            Effect: "Allow"
+            Principal: 
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:GetBucketAcl"
+            Resource: 
+              !Sub |-
+                arn:aws:s3:::${ForeignAccountS3Bucket}
+          - 
+            Sid: "AWSCloudTrailWrite"
+            Effect: "Allow"
+            Principal: 
+              Service: "cloudtrail.amazonaws.com"
+            Action: "s3:PutObject"
+            Resource: 
+              - !Sub arn:aws:s3:::${ForeignAccountS3Bucket}/AWSLogs/${AWSOrganizationId}/*
+              - !Sub arn:aws:s3:::${ForeignAccountS3Bucket}/AWSLogs/*
+            Condition: 
+              StringEquals:
+                s3:x-amz-acl: "bucket-owner-full-control"

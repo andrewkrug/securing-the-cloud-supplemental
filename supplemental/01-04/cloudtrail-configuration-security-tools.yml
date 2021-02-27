@@ -1,0 +1,115 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Deploy a single global CloudTrail configuration enabling all regions
+  in the account to write to a trusted account secure cloudtrail storage.
+Parameters:
+  ForeignAccountRetention:
+    Description: The number of days CloudTrail should be retained in the Foreign Account s3 storage before expiry.
+    Type: String
+    Default: "90"
+  ForeignAccountGlacierRetention:
+    Description: The number of days CloudTrail should be retained in the Foreign Account glacier storage before expiry.
+    Type: String
+    Default: "365"
+  ObjectLock:
+    Description: Lock objects at the Cloud provider level disallowing tampering.  This can only be done on create.  Never updatable.
+    Type: String
+    AllowedValues: 
+      - True
+      - False
+    Default: False
+  CloudTrailBucket:
+    Description: The security tools account bucket that logs will be sequestered in.
+    Type: String
+    Default: "organization-cloudtrail.us-west-2.125649083455"
+  SecurityToolsAccountId:
+    Description: The account ID of the security tools account.  This will be used to update the CMK policy.
+    Type: String
+    Default: "125649083455"
+Resources:
+  CloudTrailCMK:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: A symmetric managed KMS key for use with the foreign account trusted cloudtrail pattern.
+      KeyPolicy:
+        Version: '2012-10-17'
+        Id: cloudtrail-key-policy
+        Statement:
+        - Sid: Allow foreign accout to encrypt cloudtrail logs
+          Effect: Allow
+          Principal:
+            Service: cloudtrail.amazonaws.com
+          Action: 
+            - "kms:GenerateDataKey*"
+            - "kms:DescribeKey"
+          Resource: '*'
+        - Sid: Allow foreign accout to encrypt cloudtrail logs in the s3 service
+          Effect: Allow
+          Principal:
+            Service: s3.amazonaws.com
+          Action: "kms:GenerateDataKey*"
+          Resource: '*'
+          Condition: 
+            StringLike:
+                kms:EncryptionContext:aws:s3:arn: # Allow the S3 Bucket to use the key as well for at rest encryption
+                  - !Ref CloudTrailBucket
+        - Sid: Allow IAM Users to view CloudTrail using the UI
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root" # Any user in the this account will have access to decrypt the data
+          Action: 
+            - "kms:Decrypt"
+            - "kms:Encrypt"
+            - "kms:ReEncrypt"
+            - "kms:GenerateDataKey"
+            - "kms:DescribeKey"
+          Resource: '*'
+          Condition: 
+            StringLike:
+                kms:EncryptionContext:aws:cloudtrail:arn: false
+        - Sid: Allow IAM Users to view CloudTrail using the UI
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${SecurityToolsAccountId}:root" # Any user in the this account will have access to decrypt the data
+          Action: 
+            - "kms:Decrypt"
+            - "kms:Encrypt"
+            - "kms:ReEncrypt"
+            - "kms:GenerateDataKey"
+            - "kms:DescribeKey"
+          Resource: '*'
+          Condition: 
+            StringLike:
+                kms:EncryptionContext:aws:cloudtrail:arn: false
+        - Sid: Allow IAM Users in this account administer the key
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root" # Any user in the this with sufficient IAM access to KMS can edit this policy
+          Action: "kms:*"
+          Resource: '*'
+        - Sid: Allow the attachment of persistent resources
+          Effect: Allow
+          Principal:
+            AWS: !Sub "arn:aws:iam::${AWS::AccountId}:root"
+          Action:
+            - "kms:CreateGrant"
+            - "kms:ListGrants"
+            - "kms:RevokeGrant"
+          Resource: '*'
+          Condition:
+            Bool:
+              "kms:GrantIsForAWSResource": "true"
+  CloudTrail:
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      S3BucketName: !Ref CloudTrailBucket
+      EnableLogFileValidation: true
+      IsLogging: true
+      IncludeGlobalServiceEvents: true
+      IsMultiRegionTrail: true
+Outputs:
+  CloudTrail:
+    Description: The name of the CloudTrail successfully created.  This is a multi-region trail.
+    Value: !Ref CloudTrail
+  KMSKeyId:
+    Description: The ID of the customer master key created to protect the data at rest and create additional integrity.
+    Value: !Ref CloudTrailCMK

