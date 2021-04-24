@@ -10,7 +10,7 @@ an existing account.  We're probably going to mess it up.
 
 For creating a NEW AWS Account simply follow the instructions here:
 
-[https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/](Setting up an AWS Account)
+[https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account](Setting up an AWS Account)
 
 You will need a personal credit card or at least a visa gift card with a balance in order to open it.  You will need incur more than $50.00 in charges on that account during the course.  At the end we will shut everything down using an open source tool to scorch the earth of any resources and ultimately close this account.
 
@@ -44,7 +44,7 @@ Your VM software should have support pages on how to complete each of the above 
 
 # Chat During Training & Webcasts
 
-Join the Wild West Hackin’ Fest Discord server: [Join Our Server!]('https://discord.gg/wwhf')
+Join the Wild West Hackin’ Fest Discord server: [Join Our Server!](https://discord.gg/wwhf)
 
 All students of the paid class will be given a special role so they can access the private Discord channel. If you don’t have that yet, check your inbox for an email from us about it or reach out to training@wildwesthackinfest.com
 
