@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploy Mr Bluejays Shoe Store to AWS using nested stacks
+Parameters:
+  InstanceType:
+    Type: String
+    Description: EC2 instance type, e.g. m1.small, m1.large, etc.
+    Default: t2.micro
+  InstanceProfileArn:
+    Type: String
+    Description: The ARN of the instance profile to bind to the hosts.  This will have already been formed in another stack with IAM Permissions.
+    Default: None
+  CloudFormationS3Bucket:
+    Type: String
+    Description: The s3 bucket name hosting all cloudformation data for your organization.
+    Default: cloudformation.us-west-2.258748242541.andrewkrug.com
+  ApplicationName:
+    Type: String
+    Description: The name of the application you are deploying.
+    Default: bluejays
+  Environment:
+    Type: String
+    Description: Is this development, production, or testing.
+    Default: testing
+  Release:
+    Type: String
+    Description: What version of the application will you deploy?  Defaults to latest.
+    Default: latest
+  AWSRegion:
+    Type: String
+    Description: What AWS region are you deploying in?
+    Default: us-west-2
+Resources:
+  NetworkingStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        Environment: !Ref Environment
+      Tags:
+        - Key: application
+          Value: !Ref ApplicationName
+        - Key: environment
+          Value: !Ref Environment
+        - Key: stack
+          Value: !Ref AWS::StackName
+      TemplateURL: !Join [ '',  [ https://, s3-, !Ref AWSRegion, .amazonaws.com/, !Ref CloudFormationS3Bucket, /,!Ref ApplicationName,/,!Ref Release,/,networking-stack.yml ] ]
+  SecurityGroupStack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        Environment: !Ref Environment
+        CustomVpcId: !GetAtt NetworkingStack.Outputs.VpcId
+      Tags:
+        - Key: application
+          Value: !Ref ApplicationName
+        - Key: environment
+          Value: !Ref Environment
+        - Key: stack
+          Value: !Ref AWS::StackName
+      TemplateURL: !Join [ '',  [ https://, s3-, !Ref AWSRegion, .amazonaws.com/, !Ref CloudFormationS3Bucket, /,!Ref ApplicationName,/,!Ref Release,/,security-group-stack.yml ] ]
+  EC2Stack:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      Parameters:
+        ApplicationName: !Ref ApplicationName
+        Environment: !Ref Environment
+        CustomVpcId: !GetAtt NetworkingStack.Outputs.VpcId
+        BlueJaysAMI: "ami-06b5989ad0ba01c38"
+        ELBSecGroup: !GetAtt SecurityGroupStack.Outputs.ELBSecGroup
+        InstanceSecGroup: !GetAtt SecurityGroupStack.Outputs.InstanceSecGroup
+        InstanceProfileArn: !ImportValue bluejays-delivery-role
+        AnalyticsBucket: '{{resolve:ssm:/bluejays/analyticsbucketarn:1}}'
+        AutoScaleGroupSubnetIds: !Join [',', [!GetAtt NetworkingStack.Outputs.Subnet1, !GetAtt NetworkingStack.Outputs.Subnet2, !GetAtt NetworkingStack.Outputs.Subnet3]]
+        InstanceSize: !Ref InstanceType
+      Tags:
+        - Key: application
+          Value: !Ref ApplicationName
+        - Key: environment
+          Value: !Ref Environment
+        - Key: stack
+          Value: !Ref AWS::StackName
+      TemplateURL: !Join [ '',  [ https://, s3-, !Ref AWSRegion, .amazonaws.com/, !Ref CloudFormationS3Bucket, /,!Ref ApplicationName,/,!Ref Release,/,ec2-stack.yml ] ]
+Outputs:
+  LoadBalancerDNSName:
+    Description: The DNS name of the ALB hosting the application.
+    Value: !GetAtt EC2Stack.Outputs.LoadBalancerDNSName

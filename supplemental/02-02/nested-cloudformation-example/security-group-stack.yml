@@ -1,0 +1,44 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "This creates a standard vpc using best practices."
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The name of the application you are deploying.
+  Environment:
+    Type: String
+    Description: Is this development, production, or testing.
+  CustomVpcId:
+    Type: String
+    Description: The vpc id of the vpc you would like to deploy the security groups in.
+Resources:
+  ELBSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: !Join ['', ["Allows access to the ELB listeners for: ", !Ref ApplicationName, " in :", !Ref Environment]]
+      VpcId: !Ref CustomVpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+  InstanceSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    Properties:
+      GroupDescription: !Join ['', ["Allows access to the instances from load balancer for: ", !Ref ApplicationName, " in :", !Ref Environment]]
+      VpcId: !Ref CustomVpcId
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 10.0.0.0/8
+Outputs:
+  ELBSecGroup:
+    Value: !Ref ELBSecGroup
+    Description: The Security group that allows load balancer ingress.
+  InstanceSecGroup:
+    Value: !Ref InstanceSecGroup
+    Description: The security group that allows load balancer communication with instances.

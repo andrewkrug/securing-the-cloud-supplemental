@@ -180,7 +180,7 @@ Resources:
           Action:
             - "sts:AssumeRole"
           Resource: !GetAtt UnfederatedReadRole.Arn
-  AssumeUnfederatedRead:
+  AssumeOrgAdmin:
     Type: AWS::IAM::Policy
     Properties:
       Groups:

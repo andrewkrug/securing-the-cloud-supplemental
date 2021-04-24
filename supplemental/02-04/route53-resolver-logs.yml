@@ -1,0 +1,27 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Publish route53 resolver logs to a CloudWatch log group.'
+Parameters:
+  VpcId:
+    Description: 'The VpcId to apply flow logging to.'
+    Type: String
+    Default: vpc-0e7e4017a8fa7b21c
+  RetentionInDays:
+    Description: 'How many days should the query logs be retained.'
+    Type: String
+    Default: "14"
+Resources:
+  LogGroup:
+    Type: 'AWS::Logs::LogGroup'
+    Properties:
+      RetentionInDays: !Ref RetentionInDays
+  LoggingConfig:
+    Type: AWS::Route53Resolver::ResolverQueryLoggingConfig
+    Properties: 
+      DestinationArn: !GetAtt LogGroup.Arn
+      Name: !Join ['', [!Ref VpcId, -resolver-logs]]
+  LoggingAssociation:
+    Type: AWS::Route53Resolver::ResolverQueryLoggingConfigAssociation
+    Properties: 
+      ResolverQueryLogConfigId: !Ref LoggingConfig
+      ResourceId: !Ref VpcId

@@ -1,0 +1,68 @@
+/**
+ * Body CSS
+ */
+
+html,
+body {
+  height: 100%;
+}
+
+html,
+body,
+input,
+textarea,
+button {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.004);
+}
+
+
+/**
+ * Header CSS
+ */
+
+header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 2;
+}
+
+header ul.mui-list--inline {
+  margin-bottom: 0;
+}
+
+header a {
+  color: #fff;
+}
+
+header table {
+  width: 100%;
+}
+
+
+/**
+ * Content CSS
+ */
+
+#content-wrapper {
+  box-sizing: border-box;
+  min-height: 100%;
+  margin-bottom: -80px;
+  padding-bottom: 80px;
+}
+
+
+/**
+ * Footer CSS
+ */
+
+footer {
+  box-sizing: border-box;
+  height: 80px;
+  background-color: #eee;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 15px;
+}

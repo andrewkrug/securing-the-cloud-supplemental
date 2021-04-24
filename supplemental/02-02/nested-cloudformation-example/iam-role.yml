@@ -1,0 +1,55 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "This creates a the IAM role and instance profile to be bound to the instance."
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The name of the application you are deploying.
+    Default: bluejays
+Resources:
+  DeliveryRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+  DeliveryInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    DependsOn: DeliveryRole
+    Properties:
+      Roles:
+        -
+          Ref: DeliveryRole
+  DeliveryPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: DeliveryPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action:
+              - "logs:*"
+            Resource: "*"
+          -
+            Effect: "Allow"
+            Action: 
+              - "s3:*"
+            Resource: '{{resolve:ssm:/bluejays/analyticsbucketarn:1}}'
+      Roles:
+        - Ref: DeliveryRole
+Outputs:
+  InstanceProfileArn:
+    Description: The instance profile you will want to bind to your instances running bluejays shoes.
+    Value: !GetAtt DeliveryInstanceProfile.Arn
+    Export:
+      Name: !Join ['', [!Ref ApplicationName, "-delivery-role"]]

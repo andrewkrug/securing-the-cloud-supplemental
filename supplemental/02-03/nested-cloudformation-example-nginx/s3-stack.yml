@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "The analytics bucket for bluejays shoes.  Note this bucket is shared between production, development, and testing."
+Resources:
+  AnalyticsBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
+  BucketPolicy: 
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref AnalyticsBucket
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Sid: "GrantReportAccess"
+            Effect: "Allow"
+            Principal: "*"
+            Action: 
+              - "s3:GetObject"
+            Resource: 
+              - !Sub arn:aws:s3:::${AnalyticsBucket}/Reports/*
+  BucketParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /bluejays/analyticsbucketarn
+      Type: String
+      Value: !GetAtt AnalyticsBucket.Arn
+      Description: The arn of the analytics bucket for bluejays shoes.
+      Tags:
+        application: bluejays
+Outputs:
+  S3BucketArn:
+    Description: The ARN of the analytics bucket created for the delpoyment.
+    Value: !GetAtt AnalyticsBucket.Arn

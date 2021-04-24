@@ -1,0 +1,243 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Sets up the ec2 instances and load balancer.  Returns the DNS name of the alb."
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The name of the application you are deploying.
+  Environment:
+    Type: String
+    Description: Is this development, production, or testing.
+  CustomVpcId:
+    Type: String
+    Description: The vpc id of the vpc you would like to deploy the security groups in.
+  BlueJaysAMI:
+    Type: String
+    Description: "AMI ID must be in us-west-2 only."
+    Default: "ami-06b5989ad0ba01c38"
+  ELBSecGroup:
+    Type: String
+    Description: "The ID of the ELB security group."
+  InstanceSecGroup:
+    Type: String
+    Description: "The ID of the Instance security group."
+  InstanceProfileArn:
+    Type: String
+    Description: "The arn of the instance profile to bind to the instance."
+  AnalyticsBucket:
+    Type: String
+    Description: "Analytics Bucket Name"
+  AutoScaleGroupSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: A comma delimited list of subnet IDs.
+  InstanceSize:
+    Type: String
+    Description: The size of the AWS instance to create.
+Resources:
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      Subnets: !Ref AutoScaleGroupSubnetIds
+      SecurityGroups:
+        - Ref: ELBSecGroup
+      Tags:
+        - Key: Name
+          Value: !Ref ApplicationName
+        - Key: Environment
+          Value: !Ref Environment
+  BlueJaysTargets:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthyThresholdCount: 2
+      HealthCheckIntervalSeconds: 10
+      UnhealthyThresholdCount: 2
+      HealthCheckPath: /
+      HealthCheckPort: 80
+      Name: !Join [ '', [!Ref ApplicationName, '-', !Ref Environment, '-', targets]]
+      Port: 80
+      Protocol: HTTP
+      VpcId:
+        Ref: CustomVpcId
+  BlueJaysLaunchConfigProd:
+    Type: "AWS::AutoScaling::LaunchConfiguration"
+    Properties:
+      ImageId: !Ref BlueJaysAMI
+      IamInstanceProfile: !Ref InstanceProfileArn
+      UserData:
+        Fn::Base64: !Sub |
+          #cloud-config
+
+          packages:
+            - awslogs
+
+          write_files:
+            - content: |
+                #
+                # ------------------------------------------
+                # CLOUDWATCH LOGS AGENT CONFIGURATION FILE
+                # ------------------------------------------
+                [general]
+                state_file = /var/awslogs/state/agent-state
+                use_gzip_http_content_encoding = true
+
+                [/var/log/messages]
+                datetime_format = %b %d %H:%M:%S
+                file = /var/log/messages
+                buffer_duration = 5000
+                log_stream_name = {instance_id}
+                initial_position = start_of_file
+                log_group_name = /var/log/messages
+
+                [/var/log/secure]
+                datetime_format = %b %d %H:%M:%S
+                file = /var/log/secure
+                buffer_duration = 5000
+                log_stream_name = {instance_id}
+                initial_position = start_of_file
+                log_group_name = /var/log/secure
+
+                [/var/log/nginx/access.log]
+                datetime_format = %d/%b/%Y:%H:%M:%S %z
+                file = /var/log/nginx/access.log
+                buffer_duration = 5000
+                log_stream_name = access.log
+                initial_position = end_of_file
+                log_group_name = /ec2/nginx/logs
+
+                [/var/log/nginx/error.log]
+                datetime_format = %Y/%m/%d %H:%M:%S
+                file = /var/log/nginx/error.log
+                buffer_duration = 5000
+                log_stream_name = error.log
+                initial_position = end_of_file
+                log_group_name = /ec2/nginx/logs
+
+              path: /etc/awslogs/awslogs.conf
+
+            - content: |
+                [plugins]
+                cwlogs = cwlogs
+
+                [default]
+                region = ${AWS::Region}
+              path: /etc/awslogs/awscli.conf
+
+            - content: |
+                echo export BLUEJAYS_ANALYTICS=${AnalyticsBucket}
+              path: /etc/profile.d/analytics-info
+            
+            - content: |
+                user nginx;
+                worker_processes auto;
+                error_log /var/log/nginx/error.log;
+                pid /var/run/nginx.pid;
+                include /usr/share/nginx/modules/*.conf;
+                events {
+                worker_connections 1024;
+                }
+                http {
+                log_format json_combined escape=json
+                '{'
+                  '"time_local":"$time_local",'
+                  '"remote_addr":"$remote_addr",'
+                  '"remote_user":"$remote_user",'
+                  '"request":"$request",'
+                  '"status": "$status",'
+                  '"body_bytes_sent":"$body_bytes_sent",'
+                  '"request_time":"$request_time",'
+                  '"http_referrer":"$http_referer",'
+                  '"http_user_agent":"$http_user_agent"'
+                '}';
+                access_log  /var/log/nginx/access.log json_combined;
+                sendfile            on;
+                tcp_nopush          on;
+                tcp_nodelay         on;
+                keepalive_timeout   65;
+                types_hash_max_size 4096;
+                include             /etc/nginx/mime.types;
+                default_type        application/octet-stream;
+                include /etc/nginx/conf.d/*.conf;
+                index   index.html index.htm;
+
+                map $http_user_agent $ignore_ua {
+                    "ELB-HealthChecker/2.0" 1;
+                }
+
+                server {
+                    listen       80;
+                    listen       [::]:80;
+                    server_name  _;
+                    root         /usr/share/nginx/html;
+                    include /etc/nginx/default.d/*.conf;
+                    location / {
+                        if ($ignore_ua) {
+                            access_log off;
+                            return 200;
+                        }
+                    }
+                    error_page 404 /404.html;
+                        location = /40x.html {
+                    }
+                    error_page 500 502 503 504 /50x.html;
+                        location = /50x.html {
+                    }
+                }
+                }
+              path: /etc/nginx/nginx.conf
+          runcmd:
+              - mkdir -p /var/awslogs/state
+              - pip install --upgrade awscli
+              - touch /etc/profile.d/blue-jays.sh
+              - chmod +x /etc/profile.d/blue-jays.sh
+              - sudo yum install -y https://s3.us-west-2.amazonaws.com/amazon-ssm-us-west-2/latest/linux_amd64/amazon-ssm-agent.rpm
+              - sudo start amazon-ssm-agent
+              - sudo /etc/init.d/awslogs start
+              - sudo chkconfig awslogs on
+              - sudo service nginx restart
+      SecurityGroups:
+        - Ref: InstanceSecGroup
+      InstanceType: !Ref InstanceSize
+  BlueJaysASG:
+    Type: "AWS::AutoScaling::AutoScalingGroup"
+    Properties:
+      Tags:
+        -
+          Key: Application
+          Value: !Ref ApplicationName
+          PropagateAtLaunch: true
+        -
+          Key: Name
+          Value: BlueJaysDeliveryServer
+          PropagateAtLaunch: true
+        -
+          Key: Environment
+          Value: !Ref Environment
+          PropagateAtLaunch: true
+      TargetGroupARNs:
+         - Ref: BlueJaysTargets
+      MaxSize: "2"
+      MinSize: "1"
+      VPCZoneIdentifier: !Ref AutoScaleGroupSubnetIds
+      LaunchConfigurationName: !Ref BlueJaysLaunchConfigProd
+    UpdatePolicy:
+     AutoScalingRollingUpdate:
+       MinInstancesInService: 1
+       MaxBatchSize: 1
+       PauseTime: PT5S
+  ALBHTTPListener:
+    Type : AWS::ElasticLoadBalancingV2::Listener
+    DependsOn: ApplicationLoadBalancer
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: BlueJaysTargets
+      LoadBalancerArn:
+        Ref: ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+Outputs:
+  LoadBalancerDNSName:
+    Description: The DNS name of the ALB hosting the application.
+    Value:
+      Fn::GetAtt: [ ApplicationLoadBalancer, DNSName ]

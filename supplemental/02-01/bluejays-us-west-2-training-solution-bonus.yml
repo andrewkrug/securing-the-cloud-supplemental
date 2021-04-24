@@ -1,0 +1,304 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "US Deployment of Mr. BlueJays Challenge"
+Parameters:
+  BlueJaysAMI:
+    Type: String
+    Description: "AMI ID must be in us-west-2 only."
+    Default: "ami-06b5989ad0ba01c38"
+Resources:
+  AnalyticsBucket:
+    Type: 'AWS::S3::Bucket'
+    DeletionPolicy: Retain
+  BucketPolicy: 
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref AnalyticsBucket
+      PolicyDocument: 
+        Version: "2012-10-17"
+        Statement: 
+          - 
+            Sid: "GrantReportAccess"
+            Effect: "Allow"
+            Principal: "*"
+            Action: 
+              - "s3:GetObject"
+            Resource: 
+              - !Sub arn:aws:s3:::${AnalyticsBucket}/Reports/*
+  BlueJaysInternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: app
+          Value: BlueJaysShoes
+  BlueJaysVPC:
+    Type: "AWS::EC2::VPC"
+    DependsOn: BlueJaysInternetGateway
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsSupport: True
+      EnableDnsHostnames: True
+      Tags:
+        - Key: app
+          Value: BlueJaysShoes
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    DependsOn: BlueJaysVPC
+    Properties:
+      VpcId:
+        Ref: BlueJaysVPC
+      InternetGatewayId:
+        Ref: BlueJaysInternetGateway
+  BlueJaysRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    DependsOn: [ BlueJaysVPC, BlueJaysInternetGateway, AttachGateway ]
+    Properties:
+      VpcId:
+        Ref: BlueJaysVPC
+      Tags:
+        - Key: app
+          Value: BlueJaysShoes
+  BlueJaysDefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: BlueJaysInternetGateway
+    Properties:
+      RouteTableId:
+        Ref: BlueJaysRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: BlueJaysInternetGateway
+  BlueJaysSubnet1:
+    Type: "AWS::EC2::Subnet"
+    DependsOn: BlueJaysRouteTable
+    Properties:
+      AvailabilityZone: "us-west-2a"
+      CidrBlock: "10.0.0.0/24"
+      MapPublicIpOnLaunch: True
+      VpcId:
+        Ref: BlueJaysVPC
+      Tags:
+        - Key: app
+          Value: BlueJaysShoes
+  BlueJaysSubnet2:
+    Type: "AWS::EC2::Subnet"
+    DependsOn: BlueJaysRouteTable
+    Properties:
+      AvailabilityZone: "us-west-2b"
+      CidrBlock: "10.0.1.0/24"
+      MapPublicIpOnLaunch: True
+      VpcId:
+        Ref: BlueJaysVPC
+      Tags:
+        - Key: app
+          Value: BlueJaysShoes
+  BlueJaysSubnet3:
+    Type: "AWS::EC2::Subnet"
+    DependsOn: BlueJaysRouteTable
+    Properties:
+      AvailabilityZone: "us-west-2c"
+      CidrBlock: "10.0.2.0/24"
+      MapPublicIpOnLaunch: True
+      VpcId:
+        Ref: BlueJaysVPC
+      Tags:
+        - Key: app
+          Value: BlueJaysShoes
+  BlueJaysRouteAc1:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DependsOn: BlueJaysDefaultRoute
+    Properties:
+      RouteTableId:
+        Ref: BlueJaysRouteTable
+      SubnetId:
+        Ref: BlueJaysSubnet1
+  BlueJaysRouteAc2:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DependsOn: BlueJaysDefaultRoute
+    Properties:
+      RouteTableId:
+        Ref: BlueJaysRouteTable
+      SubnetId:
+        Ref: BlueJaysSubnet2
+  BlueJaysRouteAc3:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DependsOn: BlueJaysDefaultRoute
+    Properties:
+      RouteTableId:
+        Ref: BlueJaysRouteTable
+      SubnetId:
+        Ref: BlueJaysSubnet3
+  BlueJaysSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    DependsOn: BlueJaysVPC
+    Properties:
+      GroupDescription: "Allows ports to web instances of BlueJays from ELB."
+      VpcId:
+        Ref: BlueJaysVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: app
+          Value: BlueJaysShoes
+  DeliveryRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+  DeliveryInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    DependsOn: DeliveryRole
+    Properties:
+      Roles:
+        -
+          Ref: DeliveryRole
+  DeliveryPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: DeliveryPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action:
+              - "logs:*"
+            Resource: "*"
+          -
+            Effect: "Allow"
+            Action: 
+              - "s3:*"
+            Resource: !GetAtt AnalyticsBucket.Arn
+      Roles:
+        - Ref: DeliveryRole
+  BlueJaysELBSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    DependsOn: BlueJaysVPC
+    Properties:
+      GroupDescription: "Allows access to the ELB listeners."
+      VpcId:
+        Ref: BlueJaysVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '443'
+          ToPort: '443'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '80'
+          ToPort: '80'
+          CidrIp: 0.0.0.0/0
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    DependsOn: BlueJaysELBSecGroup
+    Properties:
+      Scheme: internet-facing
+      Subnets:
+        - Ref: BlueJaysSubnet1
+        - Ref: BlueJaysSubnet2
+        - Ref: BlueJaysSubnet3
+      SecurityGroups:
+        - Ref: BlueJaysELBSecGroup
+      Tags:
+        - Key: Name
+          Value: BlueJaysShoes
+  BlueJaysTargets:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    DependsOn: ApplicationLoadBalancer
+    Properties:
+      HealthyThresholdCount: 2
+      HealthCheckIntervalSeconds: 10
+      UnhealthyThresholdCount: 2
+      HealthCheckPath: /
+      HealthCheckPort: 80
+      Name: BlueJays-Delivery
+      Port: 80
+      Protocol: HTTP
+      VpcId:
+        Ref: BlueJaysVPC
+  BlueJaysLaunchConfigProd:
+    Type: "AWS::AutoScaling::LaunchConfiguration"
+    DependsOn: DeliveryInstanceProfile
+    Properties:
+      ImageId: !Ref BlueJaysAMI
+      IamInstanceProfile: !GetAtt DeliveryInstanceProfile.Arn
+      UserData:
+        Fn::Base64:
+          Fn::Join: [ "", [
+              "#!/bin/bash -xe",
+              "\n",
+              "REGION=$(curl 169.254.169.254/latest/meta-data/placement/availability-zone/ | sed 's/[a-z]$//')",
+              "\n",
+              "touch /etc/profile.d/blue-jays.sh",
+              "\n",
+              "chmod +x /etc/profile.d/blue-jays.sh",
+              "\n",
+              "echo export IRON_BANK_BACKUP_LOC=\"https://qvnq4nrle9.execute-api.us-east-1.amazonaws.com/dev/\" >> /etc/profile.d/blue-jays.sh",
+              "\n",
+              "sudo yum install wget -y",
+              "\n",
+              "echo export BLUEJAYS_ANALYTICS=",
+              !Ref AnalyticsBucket,
+              " >> /etc/profile.d/analytics-info",
+              "\n",
+              "sudo yum install -y https://s3.us-west-2.amazonaws.com/amazon-ssm-us-west-2/latest/linux_amd64/amazon-ssm-agent.rpm",
+              "\n",
+              "sudo start amazon-ssm-agent"
+            ]
+          ]
+      SecurityGroups:
+        - Ref: BlueJaysSecGroup
+      InstanceType: "t2.small"
+  BlueJaysASG:
+    Type: "AWS::AutoScaling::AutoScalingGroup"
+    DependsOn: [ BlueJaysSubnet1, BlueJaysSubnet2, BlueJaysSubnet3 ]
+    Properties:
+      Tags:
+        -
+          Key: Application
+          Value: BlueJaysShoes
+          PropagateAtLaunch: true
+        -
+          Key: Name
+          Value: BlueJaysDeliveryServer
+          PropagateAtLaunch: true
+      TargetGroupARNs:
+         - Ref: BlueJaysTargets
+      MaxSize: "2"
+      MinSize: "1"
+      VPCZoneIdentifier:
+        - Ref: BlueJaysSubnet1
+        - Ref: BlueJaysSubnet2
+        - Ref: BlueJaysSubnet3
+      LaunchConfigurationName: !Ref BlueJaysLaunchConfigProd
+  ALBHTTPListener:
+    Type : AWS::ElasticLoadBalancingV2::Listener
+    DependsOn: ApplicationLoadBalancer
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: BlueJaysTargets
+      LoadBalancerArn:
+        Ref: ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+

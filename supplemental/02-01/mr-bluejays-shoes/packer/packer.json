@@ -1,0 +1,52 @@
+{
+  "variables": {
+      "aws_access_key":     "{{env `AWS_ACCESS_KEY_ID`}}",
+      "aws_secret_key":     "{{env `AWS_SECRET_ACCESS_KEY`}}",
+      "aws_security_token": "{{env `AWS_SECURITY_TOKEN`}}"
+  },
+  "builders": [
+    {
+      "type": "amazon-ebs",
+      "region": "us-west-2",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "token": "{{user `aws_security_token`}}",
+      "source_ami": "ami-aa5ebdd2",
+      "instance_type": "t2.large",
+      "ssh_pty" : "true",
+      "ssh_username": "ec2-user",
+      "ami_name": "bluejays_shoes_{{timestamp}}"
+    }
+  ],
+  "provisioners": [
+   { "type": "shell",
+      "inline": [
+      "sleep 30",
+      "sudo yum update -y",
+      "sudo pip install boto3 --upgrade",
+      "sudo yum install nginx -y",
+      "sudo chkconfig nginx on",
+      "sudo service nginx start"
+  ]},
+   {
+    "type": "file",
+    "source": "./files/motd",
+    "destination": "/home/ec2-user/motd"
+   },
+   { "type": "shell",
+      "inline": [
+      "sudo mv /home/ec2-user/motd /etc/motd"
+    ]
+   },
+   {
+    "type": "file",
+    "source": "../html",
+    "destination": "/home/ec2-user/html"
+   },
+   { "type": "shell",
+      "inline": [
+      "sudo mv /home/ec2-user/html/* /usr/share/nginx/html/"
+    ]
+   }
+ ]
+}

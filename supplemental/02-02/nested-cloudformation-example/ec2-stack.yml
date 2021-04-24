@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Sets up the ec2 instances and load balancer.  Returns the DNS name of the alb."
+Parameters:
+  ApplicationName:
+    Type: String
+    Description: The name of the application you are deploying.
+  Environment:
+    Type: String
+    Description: Is this development, production, or testing.
+  CustomVpcId:
+    Type: String
+    Description: The vpc id of the vpc you would like to deploy the security groups in.
+  BlueJaysAMI:
+    Type: String
+    Description: "AMI ID must be in us-west-2 only."
+    Default: "ami-06b5989ad0ba01c38"
+  ELBSecGroup:
+    Type: String
+    Description: "The ID of the ELB security group."
+  InstanceSecGroup:
+    Type: String
+    Description: "The ID of the Instance security group."
+  InstanceProfileArn:
+    Type: String
+    Description: "The arn of the instance profile to bind to the instance."
+  AnalyticsBucket:
+    Type: String
+    Description: "Analytics Bucket Name"
+  AutoScaleGroupSubnetIds:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: A comma delimited list of subnet IDs.
+  InstanceSize:
+    Type: String
+    Description: The size of the AWS instance to create.
+Resources:
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: internet-facing
+      Subnets: !Ref AutoScaleGroupSubnetIds
+      SecurityGroups:
+        - Ref: ELBSecGroup
+      Tags:
+        - Key: Name
+          Value: !Ref ApplicationName
+        - Key: Environment
+          Value: !Ref Environment
+  BlueJaysTargets:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthyThresholdCount: 2
+      HealthCheckIntervalSeconds: 10
+      UnhealthyThresholdCount: 2
+      HealthCheckPath: /
+      HealthCheckPort: 80
+      Name: !Join [ '', [!Ref ApplicationName, '-', !Ref Environment, '-', targets]]
+      Port: 80
+      Protocol: HTTP
+      VpcId:
+        Ref: CustomVpcId
+  BlueJaysLaunchConfigProd:
+    Type: "AWS::AutoScaling::LaunchConfiguration"
+    Properties:
+      ImageId: !Ref BlueJaysAMI
+      IamInstanceProfile: !Ref InstanceProfileArn
+      UserData:
+        Fn::Base64:
+          Fn::Join: [ "", [
+              "#!/bin/bash -xe",
+              "\n",
+              "REGION=$(curl 169.254.169.254/latest/meta-data/placement/availability-zone/ | sed 's/[a-z]$//')",
+              "\n",
+              "touch /etc/profile.d/blue-jays.sh",
+              "\n",
+              "chmod +x /etc/profile.d/blue-jays.sh",
+              "\n",
+              "sudo yum install wget -y",
+              "\n",
+              "echo export BLUEJAYS_ANALYTICS=",
+              !Ref AnalyticsBucket,
+              " >> /etc/profile.d/analytics-info",
+              "\n",
+              "sudo yum install -y https://s3.us-west-2.amazonaws.com/amazon-ssm-us-west-2/latest/linux_amd64/amazon-ssm-agent.rpm",
+              "\n",
+              "sudo start amazon-ssm-agent"
+            ]
+          ]
+      SecurityGroups:
+        - Ref: InstanceSecGroup
+      InstanceType: !Ref InstanceSize
+  BlueJaysASG:
+    Type: "AWS::AutoScaling::AutoScalingGroup"
+    Properties:
+      Tags:
+        -
+          Key: Application
+          Value: !Ref ApplicationName
+          PropagateAtLaunch: true
+        -
+          Key: Name
+          Value: BlueJaysDeliveryServer
+          PropagateAtLaunch: true
+        -
+          Key: Environment
+          Value: !Ref Environment
+          PropagateAtLaunch: true
+      TargetGroupARNs:
+         - Ref: BlueJaysTargets
+      MaxSize: "2"
+      MinSize: "1"
+      VPCZoneIdentifier: !Ref AutoScaleGroupSubnetIds
+      LaunchConfigurationName: !Ref BlueJaysLaunchConfigProd
+  ALBHTTPListener:
+    Type : AWS::ElasticLoadBalancingV2::Listener
+    DependsOn: ApplicationLoadBalancer
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: BlueJaysTargets
+      LoadBalancerArn:
+        Ref: ApplicationLoadBalancer
+      Port: 80
+      Protocol: HTTP
+Outputs:
+  LoadBalancerDNSName:
+    Description: The DNS name of the ALB hosting the application.
+    Value:
+      Fn::GetAtt: [ ApplicationLoadBalancer, DNSName ]

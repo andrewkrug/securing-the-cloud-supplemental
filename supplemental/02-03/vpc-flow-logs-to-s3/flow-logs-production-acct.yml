@@ -1,0 +1,27 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Publish VPC flow logs to a CloudWatch log group.'
+Parameters:
+  BucketName:
+    Description: 'The name of the bucket to output logs to.'
+    Type: String
+  VpcId:
+    Description: 'The VpcId to apply flow logging to.'
+    Type: String
+  TrafficType:
+    Description: 'The type of traffic to log.'
+    Type: String
+    Default: ALL
+    AllowedValues:
+    - ACCEPT
+    - REJECT
+    - ALL
+Resources:
+  FlowLog:
+    Type: 'AWS::EC2::FlowLog'
+    Properties:
+      ResourceId: !Ref VpcId
+      ResourceType: 'VPC'
+      TrafficType: !Ref TrafficType
+      LogDestinationType: 's3'
+      LogDestination: !Join ['', ["arn:aws:s3:::", !Ref BucketName]]

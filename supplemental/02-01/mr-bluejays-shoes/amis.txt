@@ -1,0 +1,2 @@
+us-west-2: ami-a4ee3bdc
+eu-west-1: ami-1178da68
