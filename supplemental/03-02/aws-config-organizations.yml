@@ -1,0 +1,323 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Enable AWS Config with central logging and notification
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Recorder Configuration
+        Parameters:
+          - AllSupported
+          - IncludeGlobalResourceTypes
+          - ResourceTypes
+      - Label:
+          default: Delivery Channel Configuration
+        Parameters:
+          - DeliveryChannelName
+          - S3BucketName
+          - S3KeyPrefix
+          - Frequency
+      - Label:
+          default: Delivery Notifications
+        Parameters:
+          - SNS
+          - TopicArn
+          - NotificationEmail
+    ParameterLabels:
+      AllSupported:
+        default: Support all resource types
+      IncludeGlobalResourceTypes:
+        default: Include global resource types
+      ResourceTypes:
+        default: List of resource types if not all supported
+      DeliveryChannelName:
+        default: Configuration delivery channel name
+      S3BucketName:
+        default: Central S3 bucket
+      S3KeyPrefix:
+        default: Prefix for the specified Amazon S3 bucket
+      Frequency:
+        default: Snapshot delivery frequency
+      SNS:
+        default: SNS notifications
+      TopicArn:
+        default: SNS topic name
+      NotificationEmail:
+        default: Notification Email (optional)
+
+Parameters:
+  AllSupported:
+    Type: String
+    Default: True
+    Description: Indicates whether to record all supported resource types.
+    AllowedValues:
+      - True
+      - False
+
+  IncludeGlobalResourceTypes:
+    Type: String
+    Default: True
+    Description: Indicates whether AWS Config records all supported global resource types.
+    AllowedValues:
+      - True
+      - False
+
+  ResourceTypes:
+    Type: List<String>
+    Description: A list of valid AWS resource types to include in this recording group, such as AWS::EC2::Instance or AWS::CloudTrail::Trail.
+    Default: <All>
+
+  DeliveryChannelName:
+    Type: String
+    Default: <Generated>
+    Description: The name of the delivery channel.
+
+  S3BucketName:
+    Type: String
+    Description: Central S3 bucket where AWS Config delivers configuration snapshots and history.
+    Default: <New Bucket>
+    AllowedPattern: ".+"
+
+  S3KeyPrefix:
+    Type: String
+    Description: The prefix for the Amazon S3 bucket (optional).
+    Default: <No Prefix>
+
+  Frequency:
+    Type: String
+    Default: 24hours
+    Description: The frequency with which AWS Config delivers configuration snapshots.
+    AllowedValues:
+      - Disabled
+      - 1hour
+      - 3hours
+      - 6hours
+      - 12hours
+      - 24hours
+
+  SNS:
+    Type: String
+    Default: True
+    Description: Describes wether AWS Config sends SNS notifications.
+    AllowedValues:
+      - True
+      - False
+
+  TopicArn:
+    Type: String
+    Default: <New Topic>
+    Description: The Amazon Resource Name (ARN) of the Amazon Simple Notification Service (Amazon SNS) topic that AWS Config delivers notifications to. Topic ARN must belong to the same Region where you will be deploying the Stack.
+
+  NotificationEmail:
+    Type: String
+    Default: <None>
+    Description: Email address for AWS Config notifications (for new topics).
+
+  OrganizationId:
+    Type: String
+    Default: o-ck6nmvfrcc
+    Description: The ID of your aws organization.
+
+Conditions:
+  IsAllSupported: !Equals
+    - !Ref AllSupported
+    - True
+  IsGeneratedDeliveryChannelName: !Equals
+    - !Ref DeliveryChannelName
+    - <Generated>
+  CreateBucket: !Equals
+    - !Ref S3BucketName
+    - <New Bucket>
+  UsePrefix: !Not
+    - !Equals
+      - !Ref S3KeyPrefix
+      - <No Prefix>
+  DisableSnapshots: !Equals
+    - !Ref Frequency
+    - Disabled
+  UseSNS: !Equals
+    - !Ref SNS
+    - True
+  CreateTopic: !And
+    - !Equals
+      - !Ref TopicArn
+      - <New Topic>
+    - !Condition UseSNS
+  CreateSubscription: !And
+    - !Condition CreateTopic
+    - !Not
+      - !Equals
+        - !Ref NotificationEmail
+        - <None>
+
+Mappings:
+  Settings:
+    FrequencyMap:
+      Disabled : TwentyFour_Hours
+      1hour    : One_Hour
+      3hours   : Three_Hours
+      6hours   : Six_Hours
+      12hours  : Twelve_Hours
+      24hours  : TwentyFour_Hours
+
+Resources:
+
+  ConfigBucket:
+    Condition: CreateBucket
+    DeletionPolicy: Retain
+    Type: AWS::S3::Bucket
+
+  ConfigBucketPolicy:
+    Condition: CreateBucket
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ConfigBucket
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: AWSConfigBucketPermissionsCheck
+            Effect: Allow
+            Principal:
+              Service:
+                - config.amazonaws.com
+            Action: s3:GetBucketAcl
+            Resource:
+              - !Sub "arn:${AWS::Partition}:s3:::${ConfigBucket}"
+          - Sid: AWSConfigBucketExistenceCheck
+            Effect: Allow
+            Principal:
+              Service:
+                - config.amazonaws.com
+            Action: s3:ListBucket
+            Resource:
+              - !Sub "arn:${AWS::Partition}:s3:::${ConfigBucket}"
+          - Sid: AWSConfigBucketDelivery
+            Effect: Allow
+            Principal:
+              Service:
+                - config.amazonaws.com
+            Action: s3:PutObject
+            Resource: !If
+              - UsePrefix
+              - !Sub "arn:${AWS::Partition}:s3:::${ConfigBucket}/${S3KeyPrefix}/AWSLogs/${AWS::AccountId}/*"
+              - !Sub "arn:${AWS::Partition}:s3:::${ConfigBucket}/AWSLogs/${AWS::AccountId}/*"
+            Condition:
+              StringLike:
+                's3:x-amz-acl': 'bucket-owner-full-control'
+          - Sid: AllowCrossAccount
+            Effect: Allow
+            Principal:               
+              Service:
+                - config.amazonaws.com
+            Action:
+              - s3:PutObject
+              - s3:PutObjectAcl
+            Resource: 
+              - !Sub "arn:${AWS::Partition}:s3:::${ConfigBucket}/*"
+            Condition:
+              StringLike:
+                's3:x-amz-acl': 'bucket-owner-full-control'
+  ConfigTopic:
+    Condition: CreateTopic
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: !Sub "config-topic-${AWS::AccountId}"
+      DisplayName: AWS Config Notification Topic
+
+  ConfigTopicPolicy:
+    Condition: CreateTopic
+    Type: AWS::SNS::TopicPolicy
+    Properties:
+      Topics:
+        - !Ref ConfigTopic
+      PolicyDocument:
+        Statement:
+          - Sid: AWSConfigSNSPolicy
+            Action:
+              - sns:Publish
+            Effect: Allow
+            Resource: !Ref ConfigTopic
+            Principal:
+              Service:
+                - config.amazonaws.com
+
+  EmailNotification:
+    Condition: CreateSubscription
+    Type: AWS::SNS::Subscription
+    Properties:
+      Endpoint: !Ref NotificationEmail
+      Protocol: email
+      TopicArn: !Ref ConfigTopic
+
+  ConfigRole:
+    Type: AWS::IAM::ServiceLinkedRole
+    Properties:
+      AWSServiceName: config.amazonaws.com
+
+  ConfigRecorder:
+    Type: AWS::Config::ConfigurationRecorder
+    Properties:
+      RecordingGroup:
+        AllSupported: !Ref AllSupported
+        IncludeGlobalResourceTypes: !Ref IncludeGlobalResourceTypes
+        ResourceTypes: !If
+          - IsAllSupported
+          - !Ref AWS::NoValue
+          - !Ref ResourceTypes
+      RoleARN:
+        Fn::Sub:
+          "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/aws-service-role/config.amazonaws.com/AWSServiceRoleForConfig"
+
+  ConfigAggregatorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "aws-config-aggregator-role-${AWS::StackName}"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: config.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /service-role/
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSConfigRoleForOrganizations
+  
+  ConfigAggregator:
+    Type: AWS::Config::ConfigurationAggregator
+    Properties:
+      ConfigurationAggregatorName: !Sub "${AWS::StackName}-Aggregator"
+      OrganizationAggregationSource:
+          AllAwsRegions: True
+          RoleArn: !GetAtt ConfigAggregatorRole.Arn
+
+  ConfigDeliveryChannel:
+    Type: AWS::Config::DeliveryChannel
+    Properties:
+      Name: !If
+        - IsGeneratedDeliveryChannelName
+        - !Ref AWS::NoValue
+        - !Ref DeliveryChannelName
+      ConfigSnapshotDeliveryProperties: !If
+        - DisableSnapshots
+        - !Ref AWS::NoValue
+        - DeliveryFrequency: !FindInMap
+            - Settings
+            - FrequencyMap
+            - !Ref Frequency
+      S3BucketName: !If
+        - CreateBucket
+        - !Ref ConfigBucket
+        - !Ref S3BucketName
+      S3KeyPrefix: !If
+        - UsePrefix
+        - !Ref S3KeyPrefix
+        - !Ref AWS::NoValue
+      SnsTopicARN: !If
+        - UseSNS
+        - !If
+          - CreateTopic
+          - !Ref ConfigTopic
+          - !Ref TopicArn
+        - !Ref AWS::NoValue
