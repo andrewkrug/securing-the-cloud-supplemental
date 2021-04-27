@@ -29,7 +29,7 @@ is a guardrail setup by the policy we just applied when the first user was creat
 
 8. Go ahead and enroll an MFA device for `donna.noble` or ${YOUR USER}.  Log out and log back in.
 
-9. When you created the `00-` stack you also created a couple of roles.  Navigate to the same account menu at the top right and `Switch Roles`.  The account ID is the same as the account ID from the console login link.  There are two roles you can switch to `UnfederatedAdmin` and `UnfederatedRead`.  Try setting up each one and switching between them.  Note what the console looks like to go between roles.  You can come up with your own color coding system for Admin vs Read.
+9. When you created the `00-` stack you also created a couple of roles.  Navigate to the same account menu at the top right and `Switch Roles`.  The account ID is the same as the account ID from the console login link.  There are two roles you can switch to `UnfederatedAdministrator` and `UnfederatedRead`.  Try setting up each one and switching between them.  Note what the console looks like to go between roles.  You can come up with your own color coding system for Admin vs Read.
 
 10. Now it's time to setup AWS Vault ( command line access ).  AWS Vault is super handy!  It's readily installed in your course vm ( kali linux box ).  Or if you're attending on your own machine **at your own risk** install the cli following the instructions [here](https://github.com/99designs/aws-vault)
 
