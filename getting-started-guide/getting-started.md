@@ -18,7 +18,7 @@ You may elect to keep the account beyond the course but keep in mind you will be
 
 # Lab Downloads
 
-The following link is a 10 GB VM which includes many of the tools you will need during the course:
+The following link is a ~ 2 GB VM which includes many of the tools you will need during the course:
 
 For the preview of the course please use:
 
