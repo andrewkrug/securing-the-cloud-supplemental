@@ -1,4 +1,4 @@
-# AWS Account Setup - Basic Hygeine
+# Get Acquainted With AWS
 
 Technically there's no lab for this section.  But you would be well served to do 
 one of two things during the class.

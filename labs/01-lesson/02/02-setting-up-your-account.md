@@ -20,7 +20,7 @@ security challenge questions.  The answers to these can be nonsense strings you 
 
 5. Your root user has MFA and we're just about ready to put it away.  But first, we need to enable viewing billing and configuring billing as other users.  In the same "My Account" screen near the bottom there is a panel called "IAM User and Role Access to Billing Information".  Click "Edit" in the top right of the panel and check the box that says "Activate IAM Access".  Click "Update".
 
-6. Now we're ready to add our first user.  In the course supplemental materials there are two templates in [lesson-1 supplemental](/supplemental/01-01) there are two CloudFormation templates.  Go ahead and apply them.  Apply the one beginning with `00-` prior to the one beginning with `01-`.  This will setup your very first user.
+6. Now we're ready to add our first user.  In the course supplemental materials there are two templates in [lesson-2 supplemental](/supplemental/01-02) there are two CloudFormation templates.  Go ahead and apply them.  Apply the one beginning with `00-` prior to the one beginning with `01-`.  This will setup your very first user.
 Should you choose not to customize the name of the user in the parameter your first user login will be `donna.noble`.  _named after my cat_.  The first user's password will be output in the CloudFormation stack outputs.  
 
 7. Navigate to the IAM dashboard in your account.  Copy the login link and paste it in a doc.  Log out as the root user OR in another Firefox container or Chrome Profile sign in as your first user at that sign in link.  You should not be able to do anything EXCEPT go to IAM/Users/${YOUR USER} and enroll an MFA device.  This
