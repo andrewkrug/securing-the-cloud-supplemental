@@ -1,9 +1,9 @@
 # AWS Account Setup - Basic Hygeine
 
 One of the most important parts of setting up a brand new AWS account is ensuring
-you do the right things for the root user and basic hygeine for the rest of the account
-on day one in the first lesson "account setup" we walked through what you need to do
-in order to lock down the root account and get notifications for abuse.
+you do the right things for the root user and follow basic hygeine for the rest of the account.  
+On Day One, in the second lesson "Account Setup", we walked through what you need to do
+in order to lock down the root account, get notifications for abuse, and setup an IAM User to use going forward.
 
 ## Lab Instructions
 
