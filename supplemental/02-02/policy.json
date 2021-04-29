@@ -1,0 +1,27 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::cloudformation.us-west-2.258748242541.andrewkrug.com/*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:PrincipalOrgID": "o-ck6nmvfrcc"
+                }
+            }
+        },
+        {
+            "Effect": "Allow",
+            "Principal": "*",
+            "Action": "s3:*",
+            "Resource": "arn:aws:s3:::cloudformation.us-west-2.258748242541.andrewkrug.com",
+            "Condition": {
+                "StringEquals": {
+                    "aws:PrincipalOrgID": "o-ck6nmvfrcc"
+                }
+            }
+        }
+    ]
+}
