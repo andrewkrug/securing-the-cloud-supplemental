@@ -12,7 +12,7 @@ For creating a NEW AWS Account simply follow the instructions here:
 
 [https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account)
 
-You will need a personal credit card or at least a visa gift card with a balance in order to open it.  You will need incur more than $50.00 in charges on that account during the course.  At the end we will shut everything down using an open source tool to scorch the earth of any resources and ultimately close this account.
+You will need a personal credit card or at least a visa gift card with a balance in order to open it.  You should not incur more than $50.00 in charges on that account during the course.  At the end we will shut everything down using an open source tool to scorch the earth of any resources and ultimately close this account.
 
 You may elect to keep the account beyond the course but keep in mind you will be responsible for any charges you incur.
 
