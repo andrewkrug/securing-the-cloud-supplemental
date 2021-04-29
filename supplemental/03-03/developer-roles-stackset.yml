@@ -1,10 +1,6 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Creates the basic IAM unfederated user pattern with MFA requirements and sessionname required.
 Resources: 
-  DeveloperRoleAccess:
-    Type: AWS::IAM::Group
-    Properties:
-      GroupName: DeveloperRoleAccess
   DeveloperPermissionsBoundary:
     Type: 'AWS::IAM::ManagedPolicy'
     Properties:
@@ -138,24 +134,3 @@ Resources:
         - Effect: Allow
           Principal: { "AWS": !Sub "arn:aws:iam::${AWS::AccountId}:root" }
           Action: "sts:AssumeRole"
-          Condition:
-            Bool: 
-              aws:MultiFactorAuthPresent: "true"
-            StringLike:
-              sts:RoleSessionName: "${aws:username}"
-  AssumeDeveloperRole:
-    Type: AWS::IAM::Policy
-    Properties:
-      Groups:
-        - !Ref DeveloperRoleAccess
-      PolicyName: DeveloperRoleAccess
-      PolicyDocument:
-        Id: AllowAssumption
-        Version: 2012-10-17
-        Statement:
-        -
-          Sid: AssumeDeveloperRole
-          Effect: Allow
-          Action:
-            - "sts:AssumeRole"
-          Resource: arn:aws:iam::*:role/DeveloperRole

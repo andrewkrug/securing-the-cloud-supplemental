@@ -26,3 +26,5 @@ You will also setup athena for the CloudTrail using supplemental materials.
 9. Setup the athena auto partitioner available here: [Partitioner](https://github.com/duo-labs/cloudtrail-partitioner)
 
 > File any questions in the class chat.  
+
+If you want to see some "malicious" traffic you can deploy the "key-leak" simulation.  But do note: that this will place some random .jpgs in any S3 buckets it can write to.
