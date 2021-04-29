@@ -14,6 +14,7 @@ In this lab we are going to use my CDK bootstrap and project to deploy billing a
    * `sudo npm install -g aws-cdk`
    * `sudo apt install python3-venv`
    * `python3 -m venv .`
+   * `source venv/bin/activate`
    * `pip3 install -r requirements.txt`
 2. Run `aws-vault exec unfederatedadmin` to login to the admin role for the root account.
 3. Run `cdk bootstrap` once to setup the CDK in your root account.
