@@ -1,0 +1,26 @@
+policies:
+  - name: ops-access-via
+    resource: aws.security-group
+    filters:
+      - type: ingress
+        IpProtocol: "-1"
+        Ports: [22, 3389]
+        Cidr: "0.0.0.0/0"
+    actions:
+     - type: set-permissions
+       # remove the permission matched by a previous ingress filter.
+       remove-ingress: matched
+
+       # add a list of permissions to the group.
+       add-ingress:
+         # full syntax/parameters to authorize can be used.
+         - IpPermissions:
+            - IpProtocol: TCP
+              FromPort: 22
+              ToPort: 22
+              IpRanges:
+                - Description: Home SSH Access. Stop being lazy.
+                  CidrIp: " 68.185.27.210/32"
+
+     - type: auto-tag-user
+       tag: OwnerContact

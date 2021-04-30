@@ -1,0 +1,126 @@
+# This is my sample template don't go applying this.  It's just an example
+policies:
+  - name: terminate-ec2-without-tag
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    resource: ec2
+    filters:
+      - "tag:long-running": absent
+    actions:
+      - terminate
+  - name: cloudformation-delete-failed-stacks
+    resource: cfn
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    filters:
+      - StackStatus: ROLLBACK_COMPLETE
+    actions:
+      - type: delete
+        force: true
+  - name: cloudformation-delete-untagged-stacks
+    resource: cfn
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    filters:
+      - "tag:long-running": absent
+    actions:
+      - type: delete
+        force: true
+  - name: delete-buckets-without-tags
+    resource: s3
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    filters:
+      - "tag:retain": absent
+    actions:
+        - delete
+  - name: terminate-rds-without-tag
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    resource: rds
+    filters:
+      - "tag:long-running": absent
+    actions:
+      - delete
+  - name: lambda-delete-untagged-functions
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    resource: lambda
+    filters:
+      - "tag:long-running": absent
+      - "tag:custodian-info": absent
+    actions:
+      - delete
+  - name: delete-empty-dynamodb-tables
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    resource: dynamodb-table
+    filters:
+      - TableSizeBytes: 0
+      - "tag:long-running:": absent
+    actions:
+      - delete
+  - name: sqs-delete-unencrypted
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    resource: sqs
+    filters:
+      - KmsMasterKeyId: absent
+    actions:
+      - type: delete
+  - name: apigw-delete-unused
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    resource: rest-api
+    filters:
+      - "tag:cleanup": present
+    actions:
+      - type: delete
+  - name: cloudwatch-delete-stale-log-group
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    resource: log-group
+    filters:
+      - type: last-write
+        days: 1
+    actions:
+      - delete
+  - name: cloudwatch-set-log-group-retention
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    resource: log-group
+    actions:
+      - type: retention
+        days: 1
+  - name: sns-delete-unused
+    mode:
+        type: periodic
+        schedule: "rate(12 hours)"
+        role:  arn:aws:iam::671642278147:role/Custodian
+    resource: sns
+    filters:
+      - "tag:long-running": absent
+    actions:
+      - type: delete

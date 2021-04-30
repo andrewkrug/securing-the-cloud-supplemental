@@ -1,0 +1,31 @@
+regions:
+- eu-west-1
+- global
+
+account-blacklist:
+- "999999999999" # production
+
+resource-types:
+  # don't nuke IAM users
+  excludes:
+    - IAMGroup
+    - IAMGroupPolicy
+    - IAMGroupPolicyAttachment
+    - IAMInstanceProfile
+    - IAMInstanceProfileRole
+    - IAMLoginProfile
+    - IAMOpenIDConnectProvider
+    - IAMPolicy
+    - IAMRole
+    - IAMRolePolicy
+    - IAMRolePolicyAttachment
+    - IAMSAMLProvider
+    - IAMServerCertificate
+    - IAMServiceSpecificCredential
+    - IAMUser
+    - IAMUserAccessKey
+    - IAMUserGroupAttachment
+    - IAMUserPolicy
+    - IAMUserPolicyAttachment
+accounts:
+  "258748242541": {} # aws-nuke-example
