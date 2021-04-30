@@ -1,0 +1,114 @@
+{
+  "policy": {
+    "name": "ops-access-via",
+    "resource": "aws.security-group",
+    "filters": [
+      {
+        "type": "ingress",
+        "Ports": [
+          22
+        ]
+      }
+    ],
+    "actions": [
+      {
+        "type": "set-permissions",
+        "remove-ingress": "matched",
+        "add-ingress": [
+          {
+            "IpPermissions": [
+              {
+                "IpProtocol": "TCP",
+                "FromPort": 23,
+                "ToPort": 23,
+                "IpRanges": [
+                  {
+                    "Description": "Home SSH Access. Stop being lazy.",
+                    "CidrIp": "68.185.27.210/32"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "version": "0.9.11",
+  "execution": {
+    "id": "0cf62f5e-6fab-40a1-add4-d85183fe42c3",
+    "start": 1619794752.6626117,
+    "end_time": 1619794754.0018096,
+    "duration": 1.3391978740692139
+  },
+  "config": {
+    "region": "us-west-2",
+    "regions": [
+      "us-west-2"
+    ],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": "258748242541",
+    "assume_role": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": "/home/custodian/output",
+    "cache_period": 0,
+    "dryrun": false,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "/home/custodian/policy.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": 1,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {
+    "snapshot_time": 1.339223861694336,
+    "num_fds": 1,
+    "cpu_user": 0.10999999999999999,
+    "cpu_system": 0.010000000000000009,
+    "num_ctx_switches_voluntary": 39,
+    "num_ctx_switches_involuntary": 11,
+    "read_count": 299,
+    "write_count": 21,
+    "rss": -6213632,
+    "vms": -6029312,
+    "data": -6029312
+  },
+  "api-stats": {
+    "ec2.DescribeSecurityGroups": 1,
+    "ec2.AuthorizeSecurityGroupIngress": 2,
+    "ec2.RevokeSecurityGroupIngress": 2
+  },
+  "metrics": [
+    {
+      "MetricName": "ResourceCount",
+      "Timestamp": "2021-04-30T14:59:12.877958",
+      "Value": 2,
+      "Unit": "Count"
+    },
+    {
+      "MetricName": "ResourceTime",
+      "Timestamp": "2021-04-30T14:59:12.878006",
+      "Value": 0.21102261543273926,
+      "Unit": "Seconds"
+    },
+    {
+      "MetricName": "ActionTime",
+      "Timestamp": "2021-04-30T14:59:14.001776",
+      "Value": 1.118849515914917,
+      "Unit": "Seconds"
+    }
+  ]
+}

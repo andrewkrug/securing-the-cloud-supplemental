@@ -1,0 +1,93 @@
+{
+  "policy": {
+    "name": "security-groups-unused-delete",
+    "resource": "security-group",
+    "filters": [
+      {
+        "type": "unused"
+      },
+      {
+        "type": "value",
+        "key": "GroupName",
+        "op": "not-equal",
+        "value": "default"
+      }
+    ],
+    "actions": [
+      "delete"
+    ]
+  },
+  "version": "0.9.11",
+  "execution": {
+    "id": "8c23d916-f89d-4208-97b3-7e9338648e79",
+    "start": 1619794754.0100067,
+    "end_time": 1619794755.5997484,
+    "duration": 1.5897417068481445
+  },
+  "config": {
+    "region": "us-west-2",
+    "regions": [
+      "us-west-2"
+    ],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": "258748242541",
+    "assume_role": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": "/home/custodian/output",
+    "cache_period": 0,
+    "dryrun": false,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "/home/custodian/policy.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": 1,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {
+    "snapshot_time": 1.5897393226623535,
+    "num_fds": 1,
+    "cpu_user": 0.20000000000000007,
+    "cpu_system": 0.01999999999999999,
+    "num_ctx_switches_voluntary": 90,
+    "num_ctx_switches_involuntary": 32,
+    "read_count": 776,
+    "write_count": 60,
+    "rss": 262144
+  },
+  "api-stats": {
+    "ec2.DescribeSecurityGroups": 2,
+    "ec2.DescribeNetworkInterfaces": 1,
+    "lambda.ListFunctions": 1,
+    "autoscaling.DescribeLaunchConfigurations": 1,
+    "events.ListRules": 1,
+    "codebuild.ListProjects": 1,
+    "ec2.DescribeSecurityGroupReferences": 1
+  },
+  "metrics": [
+    {
+      "MetricName": "ResourceCount",
+      "Timestamp": "2021-04-30T14:59:15.595728",
+      "Value": 0,
+      "Unit": "Count"
+    },
+    {
+      "MetricName": "ResourceTime",
+      "Timestamp": "2021-04-30T14:59:15.595749",
+      "Value": 1.5803442001342773,
+      "Unit": "Seconds"
+    }
+  ]
+}

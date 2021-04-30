@@ -1,0 +1,120 @@
+[
+  {
+    "Description": "launch-wizard-1 created 2021-04-30T07:55:39.966-07:00",
+    "GroupName": "launch-wizard-1",
+    "IpPermissions": [
+      {
+        "FromPort": 22,
+        "IpProtocol": "tcp",
+        "IpRanges": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": ""
+          }
+        ],
+        "Ipv6Ranges": [],
+        "PrefixListIds": [],
+        "ToPort": 22,
+        "UserIdGroupPairs": []
+      }
+    ],
+    "OwnerId": "258748242541",
+    "GroupId": "sg-0797498c36dfc1021",
+    "IpPermissionsEgress": [
+      {
+        "IpProtocol": "-1",
+        "IpRanges": [
+          {
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Ipv6Ranges": [],
+        "PrefixListIds": [],
+        "UserIdGroupPairs": []
+      }
+    ],
+    "VpcId": "vpc-9d4b12e5",
+    "MatchedIpPermissions": [
+      {
+        "FromPort": 22,
+        "IpProtocol": "tcp",
+        "ToPort": 22,
+        "IpRanges": [
+          {
+            "CidrIp": "0.0.0.0/0",
+            "Description": ""
+          }
+        ],
+        "Ipv6Ranges": [],
+        "PrefixListIds": [],
+        "UserIdGroupPairs": []
+      }
+    ]
+  },
+  {
+    "Description": "default VPC security group",
+    "GroupName": "default",
+    "IpPermissions": [
+      {
+        "FromPort": 22,
+        "IpProtocol": "tcp",
+        "IpRanges": [
+          {
+            "CidrIp": "68.185.27.210/32",
+            "Description": "Home SSH Access. Stop being lazy."
+          }
+        ],
+        "Ipv6Ranges": [],
+        "PrefixListIds": [],
+        "ToPort": 22,
+        "UserIdGroupPairs": []
+      },
+      {
+        "FromPort": 23,
+        "IpProtocol": "tcp",
+        "IpRanges": [
+          {
+            "CidrIp": "68.185.27.210/32",
+            "Description": "Home SSH Access. Stop being lazy."
+          }
+        ],
+        "Ipv6Ranges": [],
+        "PrefixListIds": [],
+        "ToPort": 23,
+        "UserIdGroupPairs": []
+      }
+    ],
+    "OwnerId": "258748242541",
+    "GroupId": "sg-6995a14e",
+    "IpPermissionsEgress": [
+      {
+        "IpProtocol": "-1",
+        "IpRanges": [
+          {
+            "CidrIp": "0.0.0.0/0"
+          }
+        ],
+        "Ipv6Ranges": [],
+        "PrefixListIds": [],
+        "UserIdGroupPairs": []
+      }
+    ],
+    "VpcId": "vpc-9d4b12e5",
+    "MatchedIpPermissions": [
+      {
+        "FromPort": 22,
+        "IpProtocol": "tcp",
+        "ToPort": 22,
+        "IpRanges": [
+          {
+            "CidrIp": "68.185.27.210/32",
+            "Description": "Home SSH Access. Stop being lazy."
+          }
+        ],
+        "Ipv6Ranges": [],
+        "PrefixListIds": [],
+        "UserIdGroupPairs": []
+      }
+    ]
+  }
+]

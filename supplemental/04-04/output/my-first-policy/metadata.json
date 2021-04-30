@@ -1,0 +1,85 @@
+{
+  "policy": {
+    "name": "my-first-policy",
+    "resource": "aws.ec2",
+    "filters": [
+      {
+        "tag:Custodian": "present"
+      }
+    ],
+    "actions": [
+      "stop"
+    ]
+  },
+  "version": "0.9.11",
+  "execution": {
+    "id": "a9c7bebf-009c-478a-b86d-2cdb7a901a77",
+    "start": 1619794752.1558795,
+    "end_time": 1619794752.6569753,
+    "duration": 0.5010957717895508
+  },
+  "config": {
+    "region": "us-west-2",
+    "regions": [
+      "us-west-2"
+    ],
+    "cache": "~/.cache/cloud-custodian.cache",
+    "profile": null,
+    "account_id": "258748242541",
+    "assume_role": null,
+    "external_id": null,
+    "log_group": null,
+    "tracer": null,
+    "metrics_enabled": null,
+    "metrics": null,
+    "output_dir": "/home/custodian/output",
+    "cache_period": 0,
+    "dryrun": false,
+    "authorization_file": null,
+    "subparser": "run",
+    "config": null,
+    "configs": [
+      "/home/custodian/policy.yml"
+    ],
+    "policy_filters": [],
+    "resource_types": [],
+    "verbose": 1,
+    "quiet": null,
+    "debug": false,
+    "skip_validation": false,
+    "command": "c7n.commands.run",
+    "vars": null
+  },
+  "sys-stats": {
+    "snapshot_time": 0.5010242462158203,
+    "num_fds": 1,
+    "cpu_user": 0.09999999999999998,
+    "cpu_system": 0.009999999999999995,
+    "num_ctx_switches_voluntary": 28,
+    "num_ctx_switches_involuntary": 4,
+    "read_count": 201,
+    "write_count": 14,
+    "rss": 18243584,
+    "vms": 20107264,
+    "shared": 114688,
+    "data": 20107264
+  },
+  "api-stats": {
+    "ec2.DescribeInstances": 1,
+    "ec2.DescribeTags": 1
+  },
+  "metrics": [
+    {
+      "MetricName": "ResourceCount",
+      "Timestamp": "2021-04-30T14:59:12.653713",
+      "Value": 0,
+      "Unit": "Count"
+    },
+    {
+      "MetricName": "ResourceTime",
+      "Timestamp": "2021-04-30T14:59:12.653729",
+      "Value": 0.4814472198486328,
+      "Unit": "Seconds"
+    }
+  ]
+}

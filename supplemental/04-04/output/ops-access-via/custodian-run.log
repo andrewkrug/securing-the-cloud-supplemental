@@ -1,0 +1,41 @@
+2021-04-30 14:53:52,015 - custodian.policy - DEBUG - Running policy:ops-access-via resource:aws.security-group region:us-west-2 c7n:0.9.11
+2021-04-30 14:53:52,016 - custodian.cache - DEBUG - Using cache file /home/custodian/.cache/cloud-custodian.cache
+2021-04-30 14:53:52,017 - custodian.resources.securitygroup - DEBUG - Using cached c7n.resources.vpc.SecurityGroup: 2
+2021-04-30 14:53:52,018 - custodian.resources.securitygroup - DEBUG - Filtered from 2 to 0 securitygroup
+2021-04-30 14:53:52,018 - custodian.policy - INFO - policy:ops-access-via resource:aws.security-group region:us-west-2 count:0 time:0.00
+2021-04-30 14:53:52,027 - custodian.output - DEBUG - metric:ResourceCount Count:0 policy:ops-access-via restype:aws.security-group scope:policy
+2021-04-30 14:53:52,028 - custodian.output - DEBUG - metric:ApiCalls Count:0 policy:ops-access-via restype:aws.security-group
+2021-04-30 14:56:16,571 - custodian.policy - DEBUG - Running policy:ops-access-via resource:aws.security-group region:us-west-2 c7n:0.9.11
+2021-04-30 14:56:16,572 - custodian.cache - DEBUG - Using cache file /home/custodian/.cache/cloud-custodian.cache
+2021-04-30 14:56:16,573 - custodian.resources.securitygroup - DEBUG - Using cached c7n.resources.vpc.SecurityGroup: 2
+2021-04-30 14:56:16,574 - custodian.resources.securitygroup - DEBUG - Filtered from 2 to 0 securitygroup
+2021-04-30 14:56:16,575 - custodian.policy - INFO - policy:ops-access-via resource:aws.security-group region:us-west-2 count:0 time:0.00
+2021-04-30 14:56:16,581 - custodian.output - DEBUG - metric:ResourceCount Count:0 policy:ops-access-via restype:aws.security-group scope:policy
+2021-04-30 14:56:16,582 - custodian.output - DEBUG - metric:ApiCalls Count:0 policy:ops-access-via restype:aws.security-group
+2021-04-30 14:57:00,738 - custodian.policy - DEBUG - Running policy:ops-access-via resource:aws.security-group region:us-west-2 c7n:0.9.11
+2021-04-30 14:57:00,739 - custodian.cache - DEBUG - Using cache file /home/custodian/.cache/cloud-custodian.cache
+2021-04-30 14:57:01,092 - custodian.resources.securitygroup - DEBUG - Filtered from 2 to 0 securitygroup
+2021-04-30 14:57:01,094 - custodian.policy - INFO - policy:ops-access-via resource:aws.security-group region:us-west-2 count:0 time:0.35
+2021-04-30 14:57:01,103 - custodian.output - DEBUG - metric:ResourceCount Count:0 policy:ops-access-via restype:aws.security-group scope:policy
+2021-04-30 14:57:01,104 - custodian.output - DEBUG - metric:ApiCalls Count:1 policy:ops-access-via restype:aws.security-group
+2021-04-30 14:57:28,274 - custodian.policy - DEBUG - Running policy:ops-access-via resource:aws.security-group region:us-west-2 c7n:0.9.11
+2021-04-30 14:57:28,493 - custodian.resources.securitygroup - DEBUG - Filtered from 2 to 0 securitygroup
+2021-04-30 14:57:28,494 - custodian.policy - INFO - policy:ops-access-via resource:aws.security-group region:us-west-2 count:0 time:0.22
+2021-04-30 14:57:28,503 - custodian.output - DEBUG - metric:ResourceCount Count:0 policy:ops-access-via restype:aws.security-group scope:policy
+2021-04-30 14:57:28,504 - custodian.output - DEBUG - metric:ApiCalls Count:1 policy:ops-access-via restype:aws.security-group
+2021-04-30 14:58:11,017 - custodian.policy - DEBUG - Running policy:ops-access-via resource:aws.security-group region:us-west-2 c7n:0.9.11
+2021-04-30 14:58:11,250 - custodian.resources.securitygroup - DEBUG - Filtered from 2 to 0 securitygroup
+2021-04-30 14:58:11,251 - custodian.policy - INFO - policy:ops-access-via resource:aws.security-group region:us-west-2 count:0 time:0.23
+2021-04-30 14:58:11,262 - custodian.output - DEBUG - metric:ResourceCount Count:0 policy:ops-access-via restype:aws.security-group scope:policy
+2021-04-30 14:58:11,263 - custodian.output - DEBUG - metric:ApiCalls Count:1 policy:ops-access-via restype:aws.security-group
+2021-04-30 14:58:43,977 - custodian.policy - DEBUG - Running policy:ops-access-via resource:aws.security-group region:us-west-2 c7n:0.9.11
+2021-04-30 14:58:44,208 - custodian.resources.securitygroup - DEBUG - Filtered from 2 to 0 securitygroup
+2021-04-30 14:58:44,210 - custodian.policy - INFO - policy:ops-access-via resource:aws.security-group region:us-west-2 count:0 time:0.23
+2021-04-30 14:58:44,221 - custodian.output - DEBUG - metric:ResourceCount Count:0 policy:ops-access-via restype:aws.security-group scope:policy
+2021-04-30 14:58:44,222 - custodian.output - DEBUG - metric:ApiCalls Count:1 policy:ops-access-via restype:aws.security-group
+2021-04-30 14:59:12,665 - custodian.policy - DEBUG - Running policy:ops-access-via resource:aws.security-group region:us-west-2 c7n:0.9.11
+2021-04-30 14:59:12,875 - custodian.resources.securitygroup - DEBUG - Filtered from 2 to 2 securitygroup
+2021-04-30 14:59:12,877 - custodian.policy - INFO - policy:ops-access-via resource:aws.security-group region:us-west-2 count:2 time:0.21
+2021-04-30 14:59:14,000 - custodian.policy - INFO - policy:ops-access-via action:setpermissions resources:2 execution_time:1.12
+2021-04-30 14:59:14,006 - custodian.output - DEBUG - metric:ResourceCount Count:2 policy:ops-access-via restype:aws.security-group scope:policy
+2021-04-30 14:59:14,008 - custodian.output - DEBUG - metric:ApiCalls Count:5 policy:ops-access-via restype:aws.security-group

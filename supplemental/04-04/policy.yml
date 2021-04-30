@@ -1,0 +1,37 @@
+policies:
+  - name: my-first-policy
+    resource: aws.ec2
+    filters:
+      - "tag:Custodian": present
+    actions:
+      - stop
+  - name: ops-access-via
+    resource: aws.security-group
+    filters:
+      - type: ingress
+        Ports: [22]
+    actions:
+     - type: set-permissions
+       # remove the permission matched by a previous ingress filter.
+       remove-ingress: matched
+
+       # add a list of permissions to the group.
+       add-ingress:
+         # full syntax/parameters to authorize can be used.
+         - IpPermissions:
+            - IpProtocol: TCP
+              FromPort: 22
+              ToPort: 22
+              IpRanges:
+                - Description: Home SSH Access. Stop being lazy.
+                  CidrIp: "68.185.27.210/32"
+  - name: security-groups-unused-delete
+    resource: security-group
+    filters:
+      - type: unused
+      - type: value
+        key: "GroupName"
+        op: not-equal
+        value: "default"
+    actions:
+      - delete
