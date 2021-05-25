@@ -17,13 +17,13 @@ You will also setup athena for the CloudTrail using supplemental materials.
 5. Once again using the Account menu click "switch roles".  Put in the ID of the new account and in the role name go ahead and type in `OrganizationAccountAccessRole`.
 
 6. There are several Cloudformation templates for this lesson.  They need to be applied in the following order:
-* In the organization account or "root" account you set up on day one deploy ( cloudtrail-configuration ) make note of the output for the KMS Key it created.
+* In the organization account or "root" account you set up on day one deploy ( cloudtrail-configuration.yml ) make note of the output for the KMS Key it created.
 
-* In the security tools account: deploy the consolidated logging bucket ( cloudtrail-security-tools-bucket.yml ) note that you'll need to update the parameters to match the KMS Key Id from the parent account.  Make note of the name of the bucket it creates by observing the resources tab.
+* In the security tools account: deploy the consolidated logging bucket ( cloudtrail-security-tools-bucket.yml ).  Note: you'll need to update the `KMS Key Id` and `organization id` parameters the from the parent account.  Make note of the name of the bucket it creates by observing the resources tab.
 
-* Switch back to the unfederatedadministrator role in the root account and update the cloudtrail stack "replace the stack with" ( cloudtrail-configuration-security-tools ).  Note: that you'll need to ensure the parameters match your configuration.  
+* Switch back to the unfederatedadministrator role in the root account and update the cloudtrail stack "Replace current template" ( cloudtrail-configuration-security-tools.yml ).  Note: you'll need to update the `CloudTrailBucket` and `SecurityToolsAccountId` parameters to match your configuration.  
 
-7. After that visit the CloudTrail UI in the organization account and enable this as an "Organization Trail" to apply the setting to all accounts.
+7. After that visit the CloudTrail UI in the organization account, edit the CloudTrail that was created, and enable the "Enable for all accounts in my organization" option to apply the setting to all accounts.
 
 **BONUS** 
 
