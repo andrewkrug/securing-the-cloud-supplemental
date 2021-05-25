@@ -17,9 +17,11 @@ You will also setup athena for the CloudTrail using supplemental materials.
 5. Once again using the Account menu click "switch roles".  Put in the ID of the new account and in the role name go ahead and type in `OrganizationAccountAccessRole`.
 
 6. There are several Cloudformation templates for this lesson.  They need to be applied in the following order:
-* In the security tools account: deploy the consolidated logging bucket ( cloudtrail-security-tools-bucket.yml )
-* In the organization account ( cloudtrail-configuration )
-* Then update that stack in the organization account to ( cloudtrail-configuration-security-tools )
+* In the organization account or "root" account you set up on day one deploy ( cloudtrail-configuration ) make note of the output for the KMS Key it created.
+
+* In the security tools account: deploy the consolidated logging bucket ( cloudtrail-security-tools-bucket.yml ) note that you'll need to update the parameters to match the KMS Key Id from the parent account.  Make note of the name of the bucket it creates by observing the resources tab.
+
+* Switch back to the unfederatedadministrator role in the root account and update the cloudtrail stack "replace the stack with" ( cloudtrail-configuration-security-tools ).  Note: that you'll need to ensure the parameters match your configuration.  
 
 7. After that visit the CloudTrail UI in the organization account and enable this as an "Organization Trail" to apply the setting to all accounts.
 8. Apply the athena-configuration-security-tools.yml in the security tools account and run some queries.  The reference sheet for this is [Incident Response](https://docs.google.com/document/d/1h3LtDswLAFypfeWhlppu2qhWa1FbRMdbubrddM3Z1Bs/edit?usp=sharing)
