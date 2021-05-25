@@ -24,8 +24,10 @@ You will also setup athena for the CloudTrail using supplemental materials.
 * Switch back to the unfederatedadministrator role in the root account and update the cloudtrail stack "replace the stack with" ( cloudtrail-configuration-security-tools ).  Note: that you'll need to ensure the parameters match your configuration.  
 
 7. After that visit the CloudTrail UI in the organization account and enable this as an "Organization Trail" to apply the setting to all accounts.
-8. Apply the athena-configuration-security-tools.yml in the security tools account and run some queries.  The reference sheet for this is [Incident Response](https://docs.google.com/document/d/1h3LtDswLAFypfeWhlppu2qhWa1FbRMdbubrddM3Z1Bs/edit?usp=sharing)
-9. Setup the athena auto partitioner available here: [Partitioner](https://github.com/duo-labs/cloudtrail-partitioner)
+
+**BONUS** 
+9. Apply the athena-configuration-security-tools.yml in the security tools account and run some queries.  The reference sheet for this is [Incident Response](https://docs.google.com/document/d/1h3LtDswLAFypfeWhlppu2qhWa1FbRMdbubrddM3Z1Bs/edit?usp=sharing)
+10. Setup the athena auto partitioner available here: [Partitioner](https://github.com/duo-labs/cloudtrail-partitioner)
 
 > File any questions in the class chat.  
 
