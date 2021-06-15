@@ -14,12 +14,20 @@ You will also setup athena for the CloudTrail using supplemental materials.
 
 4. Use the AWS Organizations UI to move that account into the Security OU.  Take note of the account ID.
 
-5. Once again using the Account menu click "switch roles".  Put in the ID of the new account and in the role name go ahead and type in `OrganizationAccountAccessRole`.
+5. Log into the AWS Console with the IAM User "donna.noble" (or the account name you chose), and once again using the Account menu click "switch roles".  Put in the ID of the new account and in the role name go ahead and type in `OrganizationAccountAccessRole`.
 
-6. There are several Cloudformation templates for this lesson.  They need to be applied in the following order:
-* In the organization account or "root" account you set up on day one deploy ( cloudtrail-configuration.yml ) make note of the output for the KMS Key it created.
-
-* In the security tools account: deploy the consolidated logging bucket ( cloudtrail-security-tools-bucket.yml ).  Note: you'll need to update the `KMS Key Id` and `organization id` parameters the from the parent account.  Make note of the name of the bucket it creates by observing the resources tab.
+6. There are several Cloudformation templates for this lesson.  They need to be applied in the following order with the specified accounts:
+    1. `supplemental/01-04/cloudtrail-configuration.yml`
+        * Create in the Root Account
+        * Take note of the Physical Id for the KMS Key created under the Resources tab (Logical ID: CloudTrailCMK)
+    2. `supplemental/01-04/cloudtrail-security-tools-bucket.yml`
+        * Create in the Security Account
+        * On the Specify stack details step:
+            * Update the `KMS Key Id` Parameter to match the KMS Key generated in the previous stack creation
+            * Update the `organization id` Parameter to match the Organization Id from Step 1.
+        * Take note of the Physical ID for the bucket that is created under the Resources tab (Logical ID: ForeignAccountS3Bucket)
+    3. `supplemental/01-04/cloudtrail-security-tools-bucket.yml`
+        * Create in the unfederatedadministrator role
 
 * Switch back to the unfederatedadministrator role in the root account and update the cloudtrail stack "Replace current template" ( cloudtrail-configuration-security-tools.yml ).  Note: you'll need to update the `CloudTrailBucket` and `SecurityToolsAccountId` parameters to match your configuration.  
 
