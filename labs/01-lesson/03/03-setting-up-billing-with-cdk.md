@@ -57,7 +57,7 @@ In this lab we are going to use my CDK bootstrap and project to deploy billing a
 
 8. Log in to the AWS Console and see the result in the "Billing" Section.
 
-   <img src="images/8-a.jpeg" height="250">
-   <img src="images/8-b.jpeg" height="250">
+   <img src="images/8-a.jpeg" height="100">
+   <img src="images/8-b.jpeg" height="100">
 
 This seems easy.  But ... lots of heavy lifting has been done here to set up the alarms for you.  Click around a bit and explore the budget options.
