@@ -24,26 +24,26 @@ In this lab we are going to use my CDK bootstrap and project to deploy billing a
    <img src="images/3-e.jpeg" height="100">
    <img src="images/3-f.jpeg" height="100">
 
-4. Next, inside of your course VM we need to bootstrap the CDK.  You can do so by running the following commands to get the python environment set up and cdk installed. If you have an issue here's the [installation-instructions](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html).  
+4. Next, inside of your course VM we need to bootstrap the CDK.  You can do so by running the following commands to get the python environment set up and cdk installed. If you have an issue here's the [installation-instructions](https://docs.aws.amazon.com/cdk/latest/guide/getting_started.html).
    * `cd` into the `supplemental/01-03` directory, which contains a CDK project.
-      
+
       <img src="images/4-a.jpeg" height="250">
-   
+
    * `sudo npm install -g aws-cdk`
-   
+
       <img src="images/4-b.png" height="250">
-   
+
    * `sudo apt install python3-venv`
-   
+
       <img src="images/4-c.png" height="250">
-   
+
    * `python3 -m venv venv`
    * `source venv/bin/activate`
-   
+
       <img src="images/4-d.jpeg" height="250">
-   
+
    * `pip3 install -r requirements.txt`
-   
+
       <img src="images/4-e.jpeg" height="250">
 
 5. Run `aws-vault exec unfederatedadmin` to login to the admin role for the root account.
