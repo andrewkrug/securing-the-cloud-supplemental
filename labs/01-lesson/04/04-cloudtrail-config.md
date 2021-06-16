@@ -52,7 +52,7 @@ You will also setup athena for the CloudTrail using supplemental materials.
             <img src="images/6-1-e.jpeg" height="100">
             <img src="images/6-1-f.jpeg" height="100">
 
-    2. `supplemental/01-04/cloudtrail-security-tools-bucket.yml`
+    2. `supplemental/01-04/cloudtrail-configuration-security-tools-bucket.yml`
         * Create in the Security Account
 
             <img src="images/6-2-a.jpeg" height="100">
@@ -67,7 +67,7 @@ You will also setup athena for the CloudTrail using supplemental materials.
 
             <img src="images/6-2-c.jpeg" height="100">
 
-    3. `supplemental/01-04/cloudtrail-security-tools-bucket.yml`
+    3. `supplemental/01-04/cloudtrail-configuration-security-tools.yml`
         * Switch back to the Root Account
         * Using the stack created in step 6.1, "Update" the cloudtrail stack and use "Replace Current Template" to apply the new .yml file.
 
