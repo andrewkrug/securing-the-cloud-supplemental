@@ -8,7 +8,7 @@ Parameters:
   BlueJaysAMI:
     Type: String
     Description: "AMI ID must be in us-west-2 only."
-    Default: "ami-06b5989ad0ba01c38" # This should be your new AMI ID that lives within your account
+    Default: "ami-03c0c92f8de739e34" # This should be your new AMI ID that lives within your account
 Resources:
   AnalyticsBucket:
     Type: 'AWS::S3::Bucket'
