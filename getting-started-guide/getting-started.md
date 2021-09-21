@@ -20,7 +20,7 @@ You may elect to keep the account beyond the course but keep in mind you will be
 
 The following link is a ~ 2 GB VM which includes many of the tools you will need during the course:
 
-For the preview of the course please use:
+For the course please use:
 
 [https://s3-us-west-2.amazonaws.com/securing-the-cloud.andrewkrug.com/vm/latest/packer-securing-the-cloud.ova](https://s3-us-west-2.amazonaws.com/securing-the-cloud.andrewkrug.com/vm/latest/packer-securing-the-cloud.ova)
 
