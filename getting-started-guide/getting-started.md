@@ -44,7 +44,7 @@ Your VM software should have support pages on how to complete each of the above 
 
 # Chat During Training & Webcasts
 
-Join the Wild West Hackin’ Fest Discord server: [Join Our Server!](https://discord.gg/wwhf)
+Join the Antisiphon Discord server: [Join Our Server!](https://discord.gg/antisyphon)
 
 All students of the paid class will be given a special role so they can access the private Discord channel. If you don’t have that yet, check your inbox for an email from us about it or reach out to training@wildwesthackinfest.com
 
