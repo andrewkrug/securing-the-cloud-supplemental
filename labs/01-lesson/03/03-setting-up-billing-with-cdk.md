@@ -42,7 +42,7 @@ In this lab we are going to use my CDK bootstrap and project to deploy billing a
 
       <img src="images/4-d.jpeg" height="250">
 
-   * `pip3 install -r requirements.txt`
+   * `sudo pip3 install -r requirements.txt`
 
       <img src="images/4-e.jpeg" height="250">
 
