@@ -37,7 +37,7 @@ In this lab we are going to use my CDK bootstrap and project to deploy billing a
 
       <img src="images/4-c.png" height="250">
 
-   * `python3 -m venv venv`
+   * `sudo python3 -m venv venv`
    * `source venv/bin/activate`
 
       <img src="images/4-d.jpeg" height="250">
