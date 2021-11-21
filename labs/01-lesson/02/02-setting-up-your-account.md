@@ -97,7 +97,7 @@ is a guardrail setup by the policy we just applied when the first user was creat
 
 10. Now it's time to setup AWS Vault ( command line access ).  AWS Vault is super handy!  It's readily installed in your course VM ( Kali Linux box ).  Or if you're attending on your own machine **at your own risk** install the CLI following the instructions [here](https://github.com/99designs/aws-vault)
 
-11. First we'll need to generate an Access Key to use with `aws-vault`. Navigate to IAM | Users | ${YOUR_USER} | Security Credentials, then click "Create access key". Download the .csv or otherwise save the credentials.
+11. First we'll need to generate an Access Key to use with `aws-vault`. Make sure you are in the UnfederatedAdmin role. Navigate to IAM | Users | ${YOUR_USER} | Security Credentials, then click "Create access key". Download the .csv or otherwise save the credentials.
 
     <img src="images/11-a.jpeg" height="150">
     <img src="images/11-b.jpeg" height="150">
