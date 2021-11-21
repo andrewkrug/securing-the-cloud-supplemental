@@ -10,7 +10,7 @@ In this lab we are going to use my CDK bootstrap and project to deploy billing a
 ## Lab Instructions 
 
 1. First, you should setup a manual Budget as shown in the slides to notify you of spending on your account during the course. **Remember, you are responsible for costs you incur during class -- monitor them or you may have a bad time!**
-2. Change to the UnFederatedAdmin role ( or run `aws-vault exec unfederatedadmin` ), open the Billing Dashboard and navigate to Budgets.
+2. Change to the UnFederatedAdmin role ( or run `aws-vault login unfederatedadmin` ), open the Billing Dashboard and navigate to Budgets.
 
    <img src="images/2-a.jpeg" height="100">
    <img src="images/2-b.jpeg" height="100">
