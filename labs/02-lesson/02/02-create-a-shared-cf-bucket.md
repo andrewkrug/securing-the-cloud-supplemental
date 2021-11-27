@@ -5,7 +5,7 @@ In this lab you will setup a shared space to host CloudFormation for the rest of
 
 ## Lab Instructions
 
-1. Run the following command: 
+1. Run the following command targeting your root account (if you don't have a custom domain set up, leave .YOURDOMAIN off): 
 ``` bash
 aws s3api create-bucket \
 --bucket cloudformation.us-west-2.${ACCOUNTID}.YOURDOMAIN \
