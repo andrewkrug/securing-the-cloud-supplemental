@@ -59,7 +59,7 @@ python cloudmapper.py collect --account YOUR_ACCOUNT
 
 6. Generate audit findings!  Run `python cloudmapper.py report --account YOUR_ACCOUNT`
 
-> Observe the result in /web
+> Observe the result in /web, particularly web/account-data/report.html in a browser.
 
 7. You can now also run `python cloudmapper.py webserver`
 
