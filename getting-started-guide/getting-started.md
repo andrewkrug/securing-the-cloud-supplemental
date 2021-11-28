@@ -38,7 +38,7 @@ This will download “packer-securing-the-cloud.ova”. Simply import it into yo
 It would be helpful (but not required) if you made the following changes to your VM environment:
 1) Enable copy/paste between host and VM
 
-The VM must have the ability to access the internet as you will be interacting with AWS. Ata minimum, DNS and HTTP/HTTPS are needed, and one lab will require outbound SSH.
+The VM must have the ability to access the internet as you will be interacting with AWS. At a minimum, DNS and HTTP/HTTPS are needed, and one lab will require outbound SSH.
 
 Your VM software should have support pages on how to complete each of the above steps. 
 
