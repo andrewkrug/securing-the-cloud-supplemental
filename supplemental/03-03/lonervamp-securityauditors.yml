@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates a group, role, and policy to allow securityauditors SecurityAudit permissions to the account.
+Resources: 
+  SecurityAuditorsRoleAccess:
+    Type: AWS::IAM::Group
+    Properties:
+      GroupName: SecurityAuditorsTeamDeimos
+  SecurityAuditorsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SecurityAuditorsRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/SecurityAudit"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: { "AWS": !Sub "arn:aws:iam::${AWS::AccountId}:root" }
+          Action: "sts:AssumeRole"
+          Condition:
+            Bool: 
+              aws:MultiFactorAuthPresent: "true"
+  AssumeSecurityAuditorsRole:
+    Type: AWS::IAM::Policy
+    Properties:
+      Groups:
+        - !Ref SecurityAuditorsRoleAccess
+      PolicyName: SecurityAuditorsRoleAccess
+      PolicyDocument:
+        Id: AllowAssumption
+        Version: 2012-10-17
+        Statement:
+        -
+          Sid: AssumeSecurityAuditorsRole
+          Effect: Allow
+          Action: "sts:AssumeRole"
+          Resource: arn:aws:iam::*:role/SecurityAuditorsRole
