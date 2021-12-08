@@ -1,0 +1,28 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates a Security Auditor Role in linked accounts to allow security auditors in the org root account to assume a SecurityAuditRole in linked accounts to do audit things. Like run cloudmapper.
+Parameters:
+
+  OrganizationAccountId:
+    Description: The account ID of the parent org root account.
+    MinLength: '12'
+    AllowedPattern: '[0-9]+'
+    MaxLength: '12'
+    Type: String
+    Default: '258748242541'
+
+Resources: 
+  SecurityAuditorsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SecurityAuditorsRole
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/SecurityAudit"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            AWS: !Sub 
+              - 'arn:aws:iam::${ORGANID}:root'
+              - { ORGANID: !Ref OrganizationAccountId }
+          Action: "sts:AssumeRole"
