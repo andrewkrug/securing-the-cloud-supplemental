@@ -87,8 +87,8 @@ You will also setup athena for the CloudTrail using supplemental materials.
 
 **BONUS**
 
-9. Apply the athena-configuration-security-tools.yml in the security tools account and run some queries.  The reference sheet for this is [Incident Response](https://github.com/easttimor/aws-incident-response)
-10. Setup the athena auto partitioner available here: [Partitioner](https://github.com/duo-labs/cloudtrail-partitioner)
+8. Apply the athena-configuration-security-tools.yml in the security tools account and run some queries.  The reference sheet for this is [Incident Response](https://github.com/easttimor/aws-incident-response)
+9. Setup the athena auto partitioner available here: [Partitioner](https://github.com/duo-labs/cloudtrail-partitioner)
 
 > File any questions in the class chat.  
 

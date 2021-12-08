@@ -4,7 +4,7 @@ In this lab you'll use pre-created templates to push out a locked down developer
 
 ## Lab Instructions
 
-1. Deploy the cloudformation template in `supplemental/03-03` called "developer-roles.yml".  
+1. In the root account, deploy the cloudformation template in `supplemental/03-03` called "developer-roles.yml".  
 2. Add your user donna.noble to the group it creates.  The group can be found in the outputs.
 3. Setup your aws-vault to assume the role you just created.
 

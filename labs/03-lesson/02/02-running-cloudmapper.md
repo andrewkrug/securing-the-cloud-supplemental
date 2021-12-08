@@ -21,6 +21,7 @@ sudo docker build -t cloudmapper .
 ```
 
 > This builds a docker container with all the cloudmapper dependencies.  This is super important because Kali comes with python 3.9 and it breaks some depends in cloudmapper.
+> If this command exits due to an error with finidng the python3.7-dev package, try editing the Dockerfile and replacing the python3.7-dev with python3.9-dev in the "RUN apt-get install..." line. Do not change the first line that starts with "FROM..."
 
 3. Now let's prepare to run the container.
 
@@ -59,7 +60,7 @@ python cloudmapper.py collect --account YOUR_ACCOUNT
 
 6. Generate audit findings!  Run `python cloudmapper.py report --account YOUR_ACCOUNT`
 
-> Observe the result in /web
+> Observe the result in /web, particularly web/account-data/report.html in a browser.
 
 7. You can now also run `python cloudmapper.py webserver`
 
