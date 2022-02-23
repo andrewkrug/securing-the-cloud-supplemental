@@ -28,7 +28,7 @@ Example .aws/config to be used with aws-vault cli:
 
 1. Assume the OrganizationAccountAccessRole within your production account.
 2. Select the `us-west-2` region.
-3. Deploy the CloudFormation template using a method of your choosing CLI or Console and name it "BlueJays-Production".  Go ahead and take all the defaults.
+3. Deploy the [02-01/bluejays-us-west-2-training CloudFormation template](https://github.com/andrewkrug/securing-the-cloud-supplemental/blob/main/supplemental/02-01/bluejays-us-west-2-training-base.yml)  using a method of your choosing CLI or Console and name it "BlueJays-Production".  Go ahead and take all the defaults.
 4. Observe the resources forming in your account as they are forming.  It may take up to 10-minutes for the instance to come online.  In the mean time you can click on any resource formed to see that in the console.
 5. In the EC2 console find the load balancer DNS name and ensure you can navigate to the site.  Note: You can also run: `export AWS_DEFAULT_REGION=us-west-2 && aws elbv2 describe-load-balancers | grep -i dns`
 
