@@ -35,7 +35,7 @@ In Terminal 2: `aws-vault exec productionadmin`
 
 You may want to run `aws sts get-caller-identity` in confirm your roles in the two terminals are different.  
 
-3. Navigate to `supplemental/02-02/nested-cloudformation` in both shells.  
+3. Navigate to `supplemental/02-02/nested-cloudformation-example` in both shells.  
 
 You will notice a `Makefile`.  Edit that Makefile to include your S3_PROD_BUCKET_NAME from the root account.  
 
