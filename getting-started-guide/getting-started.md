@@ -26,7 +26,7 @@ For the course please use:
 
 Subsequent courses will pin to specific versions of the OVA as we address errata.
 
-`MD5 for the file (packer-securing-the-cloud.ova) = b3bab15c51f1a6d6591c6f998180b032`
+`MD5 for the file (packer-securing-the-cloud.ova) = 56d44938340ec9bfc6f7b95e3228469d`
 
 username: vagrant
 password: vagrant
