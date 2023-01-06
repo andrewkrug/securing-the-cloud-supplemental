@@ -1,6 +1,6 @@
 regions:
-- eu-west-1
-- global
+- us-west-2
+- us-east-1
 
 account-blacklist:
 - "999999999999" # production
