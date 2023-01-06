@@ -66,3 +66,7 @@ virtualenv
 vm
 vmWare
 webauthn
+yml
+csv
+sts
+jpgs
