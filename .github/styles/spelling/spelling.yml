@@ -1,0 +1,6 @@
+extends: spelling
+message: "'%s' is a typo!"
+level: error
+ignore:
+  # Locate at StylesPath/Vocab/allow.txt
+  - Vocab/allow.txt

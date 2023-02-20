@@ -69,7 +69,7 @@ attackbot$ sam local start-api
 attackbot$ curl http://localhost:3000/
 ```
 
-The SAM CLI reads the application template to determine the API's routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
+The SAM CLI reads the application template to determine the API routes and the functions that they invoke. The `Events` property on each function's definition includes the route and method for each path.
 
 ```yaml
       Events:

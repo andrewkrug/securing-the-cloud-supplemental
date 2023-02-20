@@ -142,7 +142,7 @@ is a guardrail setup by the policy we just applied when the first user was creat
 
 <img src="images/14-a.png" height="150">
 
-15.  Finally let's stop entering usernames and passwords in the web console.  Try `aws-vault login unfederatedadmin` and your browser will open inside of the role you've just exec'ed into.  Pretty Cool!
+15.  Finally let's stop entering usernames and passwords in the web console.  Try `aws-vault login unfederatedadmin` and your browser will open inside of the role you've just assumed.  Pretty Cool!
 
 <img src="images/console-login-animation.gif">
 
