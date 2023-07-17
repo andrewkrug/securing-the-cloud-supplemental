@@ -1,0 +1,34 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Creates the securityadmin role to set up consolidated logging, athena, etc.
+Parameters:
+  TrainingOrg1:
+    Type: String
+    Description: The account ID of training_1.
+    Default: "099633309182"
+  TrainingOrg2:
+    Type: String
+    Description: The account ID of training_2.
+    Default: "506113072617"
+Resources: 
+  SecurityAdministratorRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: SecurityAdministrator
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/AdministratorAccess"
+        - "arn:aws:iam::aws:policy/job-function/Billing"
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal: { "AWS": !Sub "arn:aws:iam::${TrainingOrg1}:root" }
+          Action: "sts:AssumeRole"
+          Condition:
+            Bool: 
+              aws:MultiFactorAuthPresent: "true"
+        - Effect: Allow
+          Principal: { "AWS": !Sub "arn:aws:iam::${TrainingOrg2}:root" }
+          Action: "sts:AssumeRole"
+          Condition:
+            Bool: 
+              aws:MultiFactorAuthPresent: "true"
