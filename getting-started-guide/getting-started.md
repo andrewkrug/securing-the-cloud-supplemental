@@ -62,7 +62,7 @@ it is still highly reccomended that when the course is over you maintain your ow
 
 To access the Securing the Cloud hosted lab visit:
 
-[Single Signon for Secuing the Cloud]('https://resilientsecuritylabs.awsapps.com/start')
+[Single Signon for Secuing the Cloud](https://resilientsecuritylabs.awsapps.com/start)
 
 1. Attempt to signin using the e-mail address you registered for the course with.  
 2. You'll be prompted to set a password and enroll a second factor authentication device.  For the purpose of this course please choose a strong password and enroll a TOTP (time-based) second factor using an app like Google Authenticator, Authy, or Duo mobile.  
