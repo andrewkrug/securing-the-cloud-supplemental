@@ -196,3 +196,19 @@ Resources:
           Action:
             - "sts:AssumeRole"
           Resource: arn:aws:iam::*:role/OrganizationAccountAccessRole
+  AssumeSecurityAdmin:
+    Type: AWS::IAM::Policy
+    Properties:
+      Groups:
+        - !Ref OrgAdminAccess
+      PolicyName: AssumeSecurityAdminPolicy
+      PolicyDocument:
+        Id: AllowAssumption
+        Version: 2012-10-17
+        Statement:
+        -
+          Sid: AssumeSecurityAdmin
+          Effect: Allow
+          Action:
+            - "sts:AssumeRole"
+          Resource: arn:aws:iam::*:role/SecurityAdmin

@@ -13,6 +13,12 @@ Resources:
   AnalyticsBucket:
     Type: 'AWS::S3::Bucket'
     DeletionPolicy: Retain
+    Properties:
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
   BucketPolicy: 
     Type: AWS::S3::BucketPolicy
     Properties: 

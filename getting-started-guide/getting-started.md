@@ -3,18 +3,10 @@
 You'll need exactly two things in order to attend the class.  
 
 1. The Course Virtual Machine
-2. A totally empty NEW AWS Account.  Please don't use
+2. A totally empty NEW AWS Account. (maybe unless you're attending the private version where we host these)  Please don't use
 an existing account.  We're probably going to mess it up.
 
-# AWS Account Setup
-
-For creating a NEW AWS Account simply follow the instructions here:
-
-[https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account)
-
-You will need a personal credit card or at least a visa gift card with a balance in order to open it.  You should not incur more than $50.00 in charges on that account during the course.  At the end we will shut everything down using an open source tool to scorch the earth of any resources and ultimately close this account.
-
-You may elect to keep the account beyond the course but keep in mind you will be responsible for any charges you incur.
+If you are attending the private version of the course with hosted AWS accounts please skip to that section of the document. [Hosted Lab Instructions](#hosted-lab-instructions)
 
 # Lab Downloads
 
@@ -26,7 +18,8 @@ For the course please use:
 
 Subsequent courses will pin to specific versions of the OVA as we address errata.
 
-`MD5 for the file (packer-securing-the-cloud.ova) = 56d44938340ec9bfc6f7b95e3228469d`
+`MD5 for the file (packer-securing-the-cloud.ova) = 3515201cf00064faf273ea2daebd9df1`
+`SHASUM for the file ('packer-securing-the-cloud.ova') = 225de14b3e15a650254d9fdd3f42ac1cd25ddd9f`
 
 username: vagrant
 password: vagrant
@@ -51,3 +44,28 @@ All students of the paid class will be given a special role so they can access t
 For an errata please open a github issue on this repository or make a pull request to fix it for someone else.
 
 Thanks!
+
+# AWS Account Setup
+
+For creating a NEW AWS Account simply follow the instructions here:
+
+[https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account](https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account)
+
+You will need a personal credit card or at least a visa gift card with a balance in order to open it.  You should not incur more than $50.00 in charges on that account during the course.  At the end we will shut everything down using an open source tool to scorch the earth of any resources and ultimately close this account.
+
+You may elect to keep the account beyond the course but keep in mind you will be responsible for any charges you incur.
+
+# Hosted Lab Instructions
+
+For select deliveries of Securing the Cloud Foundations we host the infrastructure and accounts that learners will use
+it is still highly reccomended that when the course is over you maintain your own lab environment because there are some labs you just can not do without your own sandbox.
+
+To access the Securing the Cloud hosted lab visit:
+
+[Single Signon for Secuing the Cloud](https://resilientsecuritylabs.awsapps.com/start)
+
+1. Attempt to signin using the e-mail address you registered for the course with.  
+2. You'll be prompted to set a password and enroll a second factor authentication device.  For the purpose of this course please choose a strong password and enroll a TOTP (time-based) second factor using an app like Google Authenticator, Authy, or Duo mobile.  
+3. On success you'll be signed into AWS Identity Center with three accounts you have access to.  Two training accounts with an "Administrator Role" and a "Security Audit Role".  One account that also has access to the consolidated billing account / Organization Master with a scoped down set of access.  
+
+Any questions please reach out in Discord.
