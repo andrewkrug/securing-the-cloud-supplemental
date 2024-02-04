@@ -1,6 +1,6 @@
 # Cloud Custodian Lab
 
-In this lab we're going to use captial one cloud custodian to create a security
+In this lab we're going to use CNCF cloud custodian to create a security
 automation.  We'll apply a policy that allows custodian to take actions on resources when they don't meet certain criteria.
 
 ## Lab Instructions
