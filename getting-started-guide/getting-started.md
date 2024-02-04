@@ -65,3 +65,7 @@ To access the Securing the Cloud hosted lab visit:
 [Single Signon for Secuing the Cloud]('https://resilientsecuritylabs.awsapps.com/start')
 
 1. Attempt to signin using the e-mail address you registered for the course with.  
+2. You'll be prompted to set a password and enroll a second factor authentication device.  For the purpose of this course please choose a strong password and enroll a TOTP (time-based) second factor using an app like Google Authenticator, Authy, or Duo mobile.  
+3. On success you'll be signed into AWS Identity Center with three accounts you have access to.  Two training accounts with an "Administrator Role" and a "Security Audit Role".  One account that also has access to the consolidated billing account / Organization Master with a scoped down set of access.  
+
+Any questions please reach out in Discord.
