@@ -6,7 +6,7 @@ You'll need exactly two things in order to attend the class.
 2. A totally empty NEW AWS Account. (maybe unless you're attending the private version where we host these)  Please don't use
 an existing account.  We're probably going to mess it up.
 
-If you are attending the private version of the course with hosted AWS accounts please skip to that section of the document. [Hosted Lab Instructions](#Hosted Lab Instructions)
+If you are attending the private version of the course with hosted AWS accounts please skip to that section of the document. [Hosted Lab Instructions](#hosted-lab-instructions)
 
 # Lab Downloads
 
