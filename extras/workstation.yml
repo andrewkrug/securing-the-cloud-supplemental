@@ -1,0 +1,197 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Workstation for securing the cloud foundations"
+Metadata:
+  Repository:
+    # Add metadata to the template to know where the source code lives
+    Description: "The github repository for the application is: github.com/andrewkrug/securing-the-cloud-supplemental"
+Parameters:
+  WorkstationAMI:
+    Type: String
+    Description: "AMI ID must be in us-west-2 only."
+    Default: "ami-02feb72d7c79ad19a" # This should be your new AMI ID that lives within your account
+Resources:
+  WorkstationInternetGateway:
+    Type: "AWS::EC2::InternetGateway"
+    Properties:
+      Tags:
+        - Key: app
+          Value: WorkstationImage
+  WorkstationVPC:
+    Type: "AWS::EC2::VPC"
+    DependsOn: WorkstationInternetGateway
+    Properties:
+      CidrBlock: "10.0.0.0/16"
+      EnableDnsSupport: True
+      EnableDnsHostnames: True
+      Tags:
+        - Key: app
+          Value: WorkstationImage
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    DependsOn: WorkstationVPC
+    Properties:
+      VpcId:
+        Ref: WorkstationVPC
+      InternetGatewayId:
+        Ref: WorkstationInternetGateway
+  WorkstationRouteTable:
+    Type: "AWS::EC2::RouteTable"
+    DependsOn: [ WorkstationVPC, WorkstationInternetGateway, AttachGateway ]
+    Properties:
+      VpcId:
+        Ref: WorkstationVPC
+      Tags:
+        - Key: app
+          Value: WorkstationImage
+  WorkstationDefaultRoute:
+    Type: AWS::EC2::Route
+    DependsOn: WorkstationInternetGateway
+    Properties:
+      RouteTableId:
+        Ref: WorkstationRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: WorkstationInternetGateway
+  WorkstationSubnet1:
+    Type: "AWS::EC2::Subnet"
+    DependsOn: WorkstationRouteTable
+    Properties:
+      AvailabilityZone: "us-west-2a"
+      CidrBlock: "10.0.0.0/24"
+      MapPublicIpOnLaunch: False # We don't want instances to have public IPs
+      VpcId:
+        Ref: WorkstationVPC
+      Tags:
+        - Key: app
+          Value: WorkstationImage
+  WorkstationSubnet2:
+    Type: "AWS::EC2::Subnet"
+    DependsOn: WorkstationRouteTable
+    Properties:
+      AvailabilityZone: "us-west-2b"
+      CidrBlock: "10.0.1.0/24"
+      MapPublicIpOnLaunch: False # We don't want instances to have public IPs
+      VpcId:
+        Ref: WorkstationVPC
+      Tags:
+        - Key: app
+          Value: WorkstationImage
+  WorkstationSubnet3:
+    Type: "AWS::EC2::Subnet"
+    DependsOn: WorkstationRouteTable
+    Properties:
+      AvailabilityZone: "us-west-2c"
+      CidrBlock: "10.0.2.0/24"
+      MapPublicIpOnLaunch: False # We don't want instances to have public IPs
+      VpcId:
+        Ref: WorkstationVPC
+      Tags:
+        - Key: app
+          Value: WorkstationImage
+  WorkstationRouteAc1:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DependsOn: WorkstationDefaultRoute
+    Properties:
+      RouteTableId:
+        Ref: WorkstationRouteTable
+      SubnetId:
+        Ref: WorkstationSubnet1
+  WorkstationRouteAc2:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DependsOn: WorkstationDefaultRoute
+    Properties:
+      RouteTableId:
+        Ref: WorkstationRouteTable
+      SubnetId:
+        Ref: WorkstationSubnet2
+  WorkstationRouteAc3:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    DependsOn: WorkstationDefaultRoute
+    Properties:
+      RouteTableId:
+        Ref: WorkstationRouteTable
+      SubnetId:
+        Ref: WorkstationSubnet3
+# Removed but retained in the template for rollback.
+  WorkstationSecGroup:
+    Type: "AWS::EC2::SecurityGroup"
+    DependsOn: WorkstationVPC
+    Properties:
+      GroupDescription: "Allows ports to web instances of Workstation from ELB."
+      VpcId:
+        Ref: WorkstationVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: '22'
+          ToPort: '22'
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: '6080'
+          ToPort: '6080'
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: app
+          Value: WorkstationImage
+  DeliveryRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ec2.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+  DeliveryInstanceProfile:
+    Type: "AWS::IAM::InstanceProfile"
+    DependsOn: DeliveryRole
+    Properties:
+      Roles:
+        -
+          Ref: DeliveryRole
+  DeliveryPolicy:
+    Type: "AWS::IAM::Policy"
+    Properties:
+      PolicyName: DeliveryPolicy
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action:
+              - "logs:*"
+            Resource: "*"
+      Roles:
+        - Ref: DeliveryRole
+  WorkstationLaunchConfigProd:
+    Type: "AWS::AutoScaling::LaunchConfiguration"
+    DependsOn: DeliveryInstanceProfile
+    Properties:
+      ImageId: !Ref WorkstationAMI
+      IamInstanceProfile: !GetAtt DeliveryInstanceProfile.Arn
+      SecurityGroups:
+        - Ref: WorkstationSecGroup # Updated to reference the new group.
+      InstanceType: "t2.medium"
+  WorkstationASG:
+    Type: "AWS::AutoScaling::AutoScalingGroup"
+    DependsOn: [ WorkstationSubnet1, WorkstationSubnet2, WorkstationSubnet3 ]
+    Properties:
+      Tags:
+        -
+          Key: Application
+          Value: WorkstationImage
+          PropagateAtLaunch: true
+        -
+          Key: Name
+          Value: WorkstationDeliveryServer
+          PropagateAtLaunch: true
+      MaxSize: "2"
+      MinSize: "1"
+      VPCZoneIdentifier:
+        - Ref: WorkstationSubnet1
+        - Ref: WorkstationSubnet2
+        - Ref: WorkstationSubnet3
+      LaunchConfigurationName: !Ref WorkstationLaunchConfigProd
