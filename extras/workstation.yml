@@ -58,7 +58,7 @@ Resources:
     Properties:
       AvailabilityZone: "us-west-2a"
       CidrBlock: "10.0.0.0/24"
-      MapPublicIpOnLaunch: False # We don't want instances to have public IPs
+      MapPublicIpOnLaunch: True # We don't want instances to have public IPs
       VpcId:
         Ref: WorkstationVPC
       Tags:
@@ -70,7 +70,7 @@ Resources:
     Properties:
       AvailabilityZone: "us-west-2b"
       CidrBlock: "10.0.1.0/24"
-      MapPublicIpOnLaunch: False # We don't want instances to have public IPs
+      MapPublicIpOnLaunch: True # We don't want instances to have public IPs
       VpcId:
         Ref: WorkstationVPC
       Tags:
@@ -82,7 +82,7 @@ Resources:
     Properties:
       AvailabilityZone: "us-west-2c"
       CidrBlock: "10.0.2.0/24"
-      MapPublicIpOnLaunch: False # We don't want instances to have public IPs
+      MapPublicIpOnLaunch: True # We don't want instances to have public IPs
       VpcId:
         Ref: WorkstationVPC
       Tags:
