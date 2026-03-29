@@ -13,8 +13,7 @@ If you are attending the private version of the course with hosted AWS accounts 
 The following link is a ~ 2 GB VM which includes many of the tools you will need during the course:
 
 For the course please use:
-
-[https://s3-us-west-2.amazonaws.com/securing-the-cloud.andrewkrug.com/vm/latest/packer-securing-the-cloud.ova](https://s3-us-west-2.amazonaws.com/securing-the-cloud.andrewkrug.com/vm/latest/packer-securing-the-cloud.ova)
+[https://learn.resilientsecurity.cloud/ova/1774821426620-Securing_the_Cloud_Legacy_VM-v2026.03.29.ova](https://learn.resilientsecurity.cloud/ova/1774821426620-Securing_the_Cloud_Legacy_VM-v2026.03.29.ova)
 
 Subsequent courses will pin to specific versions of the OVA as we address errata.
 
